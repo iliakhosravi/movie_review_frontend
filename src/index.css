@@ -1,0 +1,357 @@
+/* IMDb-inspired CSS Reset and Theme */
+@import "tailwindcss";
+
+:root {
+  --imdb-yellow: #f5c518;
+  --imdb-black: #121212;
+  --imdb-dark: #f8f9fa; /* changed to light */
+  --imdb-gray: #222;    /* changed to dark text */
+  --imdb-border: #e3e3e3;
+  --imdb-radius: 8px;
+  --imdb-font: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  --imdb-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --ticket-shadow: 0 8px 32px -15px rgba(245, 197, 24, 0.35);
+  --accent-gradient: linear-gradient(135deg, #f5c518 0%, #ffe082 100%);
+}
+
+html, body {
+  background: #fff;
+  color: var(--imdb-gray);
+  font-family: var(--imdb-font);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+body {
+  background: #fff;
+  color: var(--imdb-gray);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--imdb-yellow);
+  font-family: var(--imdb-font);
+  font-weight: 700;
+  margin-top: 0;
+}
+
+a {
+  color: var(--imdb-yellow);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #222;
+}
+
+button {
+  background: var(--imdb-yellow);
+  color: #000;
+  border: none;
+  border-radius: var(--imdb-radius);
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: var(--imdb-shadow);
+}
+button:hover {
+  background: #ffe082;
+}
+
+input, select, textarea {
+  background: #fff;
+  color: #222;
+  border: 1px solid var(--imdb-border);
+  border-radius: var(--imdb-radius);
+  padding: 8px 12px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--imdb-radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  color: var(--imdb-gray);
+  box-shadow: var(--imdb-shadow);
+}
+
+/* IMDb Navbar */
+.imdb-navbar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.imdb-navbar:hover {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* IMDb Logo */
+.imdb-logo {
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem 1rem;
+  background: var(--accent-gradient);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.imdb-logo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px -3px rgba(245, 197, 24, 0.4);
+}
+
+/* IMDb Movie List */
+.imdb-movie-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.imdb-movie-card {
+  background: #fff;
+  border-radius: var(--imdb-radius);
+  box-shadow: var(--imdb-shadow);
+  padding: 20px;
+  color: var(--imdb-gray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--imdb-border);
+}
+
+.imdb-movie-card img {
+  width: 100%;
+  border-radius: var(--imdb-radius);
+  margin-bottom: 12px;
+  box-shadow: var(--imdb-shadow);
+}
+
+.imdb-movie-title {
+  color: var(--imdb-yellow);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.imdb-movie-meta {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+/* Unique Movie Card Design */
+.movie-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.4s ease;
+  box-shadow: var(--ticket-shadow);
+}
+
+.movie-card::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+}
+
+.movie-card::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+}
+
+.movie-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px -15px rgba(245, 197, 24, 0.45);
+}
+
+/* Unique Search Bar */
+.search-container {
+  position: relative;
+  margin-bottom: -5px;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 99px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 24px;
+  background: #fff9cc;
+  /* More pronounced light yellow for more effect */
+  box-shadow: 0 4px 16px 0 rgba(245, 197, 24, 0.13);
+  border: 2px solid var(--glass-border);
+  border-radius: 99px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-size: 1rem;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #f5c518;
+  box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.15);
+  background: white;
+}
+
+/* Unique Add Movie Button */
+.add-movie-btn {
+  background: var(--accent-gradient);
+  color: #000;
+  font-weight: bold;
+  padding: 12px 32px;
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-movie-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  transition: 0.6s;
+}
+
+.add-movie-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.add-movie-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(245, 197, 24, 0.4);
+}
+
+/* Unique Rating Badge */
+.rating-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--accent-gradient);
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 15px -3px rgba(0,0,0,0.2);
+  z-index: 10;
+  transform-origin: center right;
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  #root {
+    padding: 0;
+  }
+  .imdb-navbar {
+    font-size: 1rem;
+    padding: 8px 8px;
+  }
+  .imdb-movie-list {
+    gap: 12px;
+  }
+  .imdb-movie-card {
+    padding: 8px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .imdb-navbar {
+    padding: 0.75rem;
+  }
+  
+  .movie-card {
+    margin: 0.5rem;
+  }
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
