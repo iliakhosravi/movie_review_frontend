@@ -1,13 +1,15 @@
 {
   "movies": [
     {
-      "id": "1",
       "title": "Downton Abbey illia",
+      "genre": "a",
       "year": 2004,
+      "director": "a",
+      "rating": 3.5,
       "description": "A family drama set in the 19th century, with a focus on the lives of the Crawley family and their servants.",
-      "posterUrl": "",
-      "categoryId": null,
-      "genreIds": []
+      "poster": "/images/darkNight.jpg",
+      "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4",
+      "id": "1"
     },
     {
       "id": "2",
@@ -15,7 +17,7 @@
       "genre": "Action",
       "year": 2008,
       "director": "Christopher Nolan",
-      "rating": 9,
+      "rating": 3,
       "description": "Batman faces his greatest psychological and physical tests when the menacing Joker wreaks havoc on Gotham City.",
       "poster": "/images/darkNight.jpg",
       "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4"
@@ -327,6 +329,17 @@
       "description": "Paul Atreides leads nomadic tribes in a revolt against the evil Harkonnen oppressors who control the desert planet Arrakis.",
       "poster": "/images/dune.jpg",
       "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4"
+    },
+    {
+      "title": "Kian",
+      "genre": "Hororr",
+      "year": 2002,
+      "director": "kian.d",
+      "rating": 9,
+      "description": "hello",
+      "poster": "/images/darkNight.jpg",
+      "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4",
+      "id": "0025"
     }
   ],
   "users": [
@@ -504,20 +517,73 @@
       "id": "b462",
       "name": "kian",
       "password": "kiankian",
-      "avatarUrl": "icon.png",
+      "avatarUrl": "/images/darkNight.jpg",
       "email": "بتسیبسنب",
-      "bio": ""
+      "bio": "",
+      "is_admin": true
     }
   ],
   "comments": [
     {
-      "id": 1,
+      "id": "1",
       "movieId": 1,
       "userId": 1,
       "userName": "Admin",
       "text": "Great movie!",
       "createdAt": "2025-08-13T10:00:00.000Z"
+    },
+    {
+      "id": "59e1",
+      "movieId": 2,
+      "userId": "b462",
+      "userName": "kian",
+      "text": "salam11",
+      "createdAt": "2025-08-13T09:27:36.426Z",
+      "rating": 8
+    },
+    {
+      "id": "d3c0",
+      "movieId": "2",
+      "userId": "b462",
+      "userName": "kian",
+      "text": "سشمشپ",
+      "rating": 6,
+      "createdAt": "2025-08-13T10:02:40.396Z"
+    },
+    {
+      "id": "a191",
+      "movieId": "1",
+      "userId": "b462",
+      "userName": "kian",
+      "text": "hi m",
+      "rating": 7,
+      "createdAt": "2025-08-13T11:02:24.761Z"
+    }
+  ],
+  "favorites": [
+    {
+      "id": 1,
+      "userId": "ee95",
+      "movieId": "2",
+      "createdAt": "2024-08-13T12:00:00.000Z"
+    },
+    {
+      "id": "971c",
+      "userId": "b462",
+      "movieId": "2",
+      "createdAt": "2025-08-13T10:52:28.955Z"
+    },
+    {
+      "id": "7f56",
+      "userId": "b462",
+      "movieId": "3",
+      "createdAt": "2025-08-13T10:52:34.521Z"
+    },
+    {
+      "id": "51dc",
+      "userId": "b462",
+      "movieId": "1",
+      "createdAt": "2025-08-13T11:03:56.332Z"
     }
   ]
-
 }

@@ -1,7 +1,5 @@
+// src/constants/api.ts
 export const MOVIES_ENDPOINT = '/movies'
-export const COMMENTS_ENDPOINT = '/comments' // +++
-
-
-const publicRoutes ={
-    MOVIEWS_LIST:()=>`${MOVIES_ENDPOINT}/list`,
-}
+export const USERS_ENDPOINT = '/users'
+export const COMMENTS_ENDPOINT = '/comments'
+export const FAVORITES_ENDPOINT = '/favorites'

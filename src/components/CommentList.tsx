@@ -1,51 +1,68 @@
 // src/components/CommentList.tsx
-import type { Comment } from '../types/Comment'
-import { useUserStore } from '../store'
-import Icon from './Icon'
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
+import type { Comment } from "../types/Comment";
+import StarRating from "./StarRating";
+import { COMMENTS_ENDPOINT } from "../constants/api";
 
-interface Props {
-  comments: Comment[]
-  onDelete?: (id: number) => void
-  deletingId?: number | null
-}
+const CommentList = ({ movieId }: { movieId: number | string }) => {
+  const [items, setItems] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default function CommentList({ comments, onDelete, deletingId }: Props) {
-  const user = useUserStore((s) => s.user)
+  const fetchComments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get<Comment[]>(
+        `${COMMENTS_ENDPOINT}?movieId=${encodeURIComponent(
+          String(movieId)
+        )}&_sort=createdAt&_order=desc`
+      );
+      setItems(res.data || []);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load comments");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (!comments.length) {
-    return <div className="text-gray-500">No comments yet.</div>
-  }
+  useEffect(() => {
+    fetchComments();
+  }, [movieId]);
+
+  if (loading) return <div className="text-gray-500">Loading comments…</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
-    <ul className="space-y-4">
-      {comments.map((c) => {
-        const canDelete = user && (user.id === c.userId || user.role === 'admin')
-        return (
-          <li key={c.id} className="border border-yellow-200 rounded-2xl p-4 bg-white/90">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="w-8 h-8 rounded-full bg-yellow-100 border border-yellow-300 flex items-center justify-center">
-                  <Icon name="UserIcon" size={16} className="text-yellow-700" />
-                </div>
-                <span className="font-semibold">{c.userName}</span>
-                <span className="text-gray-400 text-sm">• {new Date(c.createdAt).toLocaleString()}</span>
-              </div>
-              {canDelete && onDelete && (
-                <button
-                  onClick={() => onDelete(c.id)}
-                  disabled={deletingId === c.id}
-                  className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm disabled:opacity-50"
-                  title="Delete comment"
-                >
-                  <Icon name="ErrorIcon" size={16} />
-                  {deletingId === c.id ? 'Deleting…' : 'Delete'}
-                </button>
-              )}
+    <div className="space-y-4">
+      {items.length === 0 && (
+        <div className="text-gray-500">No comments yet. Be the first!</div>
+      )}
+
+      {items.map((c) => (
+        <div
+          key={String(c.id)}
+          className="bg-white/90 backdrop-blur-xl rounded-2xl shadow border border-yellow-200 p-4"
+        >
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="font-semibold text-gray-800">
+              {c.userName || `User #${c.userId}`}
+              <span className="ml-2 text-sm text-gray-500">
+                {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
+              </span>
             </div>
-            <p className="text-gray-800 mt-2 whitespace-pre-wrap">{c.text}</p>
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
+            <div className="flex items-center gap-2">
+              <StarRating value={Number(c.rating) || 0} readOnly max={10} />
+              <span className="text-sm text-gray-600">{c.rating}/10</span>
+            </div>
+          </div>
+          <p className="mt-2 text-gray-700 whitespace-pre-wrap">{c.text}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default CommentList;

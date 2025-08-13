@@ -1,11 +1,15 @@
 // src/App.tsx
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import MovieDetail from "./pages/MovieDetail";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import { useUserStore } from "./store";
+import { setAuthToken } from "./services/api";
+import type { User } from "./types/User";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const user = useUserStore((s) => s.user);
@@ -14,13 +18,37 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 }
 
 function AdminRoute({ children }: { children: JSX.Element }) {
-  const user = useUserStore((s) => s.user);
-  // if (!user) return <Navigate to="/register" replace />;
-  // if (user.role !== "admin") return <Navigate to="/" replace />;
+  const storeUser = useUserStore((s) => s.user);
+  let lsUser: User | null = null;
+  try {
+    lsUser = JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    lsUser = null;
+  }
+  const u = storeUser ?? lsUser;
+
+  if (!u) return <Navigate to="/admin-login" replace />;
+  if ((u as any).is_admin !== true) return <Navigate to="/" replace />;
   return children;
 }
 
 export default function App() {
+  const setUser = useUserStore((s) => s.setUser);
+
+  // Bootstrap user + token from localStorage
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as any;
+        setUser(parsed);
+        if (parsed?.token) setAuthToken(parsed.token);
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+  }, [setUser]);
+
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -32,7 +60,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/profile"
         element={
@@ -42,6 +69,7 @@ export default function App() {
         }
       />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/admin-login" element={<AdminLoginPage />} />
       <Route
         path="/admin"
         element={
