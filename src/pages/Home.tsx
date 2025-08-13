@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/pages/Home.tsx
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../services/api";
 import type { Movie } from "../types/Movie";
 import MovieList from "../components/MovieList";
@@ -8,7 +9,11 @@ import Header from "../components/Header";
 import { MOVIES_ENDPOINT } from "../constants/api";
 import { USERS_ENDPOINT } from "../constants/userApi";
 import { useUserStore, useUIStore } from "../store";
-import type { User } from "../types/User";
+import AdvancedSearch, {
+  type AdvancedFilters,
+} from "../components/AdvancedSearch";
+
+const normalize = (v: unknown) => (v ?? "").toString().toLowerCase().trim();
 
 const Home = () => {
   const setUser = useUserStore((s) => s.setUser);
@@ -21,17 +26,32 @@ const Home = () => {
     isScrolled,
     setIsScrolled,
   } = useUIStore();
+
   const [movies, setMovies] = useState<Movie[]>([]);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // فیلترهای پیشرفته
+  const [adv, setAdv] = useState<AdvancedFilters>({
+    title: "",
+    director: "",
+    genre: "",
+    ratingMin: "",
+    ratingMax: "",
+    yearMin: "",
+    yearMax: "",
+  });
+
+  // نمایش/عدم نمایش پنل جست‌وجوی پیشرفته (کنترل با دکمه در Header)
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // مدیریت اسکرول برای هدر
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
+  // گرفتن لیست فیلم‌ها
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -44,53 +64,106 @@ const Home = () => {
     fetchMovies();
   }, []);
 
-  const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
-
+  // گرفتن کاربر لاگین‌شده (در صورت وجود)
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userId = localStorage.getItem("userId");
         if (userId) {
-          // keep previous persisted user (may include is_admin)
-          const prevRaw = localStorage.getItem("user");
-          const prev = prevRaw ? JSON.parse(prevRaw) : null;
-
-          const response = await api.get<User>(`${USERS_ENDPOINT}/${userId}`);
-          const fresh = response.data;
-          const merged = {
-            ...fresh,
-            is_admin: (fresh as any).is_admin ?? prev?.is_admin ?? false,
-          };
-
-          setUser(merged as any);
-          localStorage.setItem("user", JSON.stringify(merged));
+          const response = await api.get(`${USERS_ENDPOINT}/${userId}`);
+          setUser(response.data);
         }
-      } catch (error) {
-        setUser(null as any);
+      } catch {
+        setUser(null);
       }
     };
     fetchUser();
   }, [setUser]);
 
+  // debounce برای سرچ سریع هدر (useUIStore.search)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // اعمال فیلترها
+  const filteredMovies = useMemo(() => {
+    const q = normalize(debouncedSearch);
+    const t = normalize(adv.title);
+    const d = normalize(adv.director);
+    const g = normalize(adv.genre);
+
+    const rMin = adv.ratingMin ? Number(adv.ratingMin) : undefined;
+    const rMax = adv.ratingMax ? Number(adv.ratingMax) : undefined;
+    const yMin = adv.yearMin ? Number(adv.yearMin) : undefined;
+    const yMax = adv.yearMax ? Number(adv.yearMax) : undefined;
+
+    return movies.filter((m) => {
+      const title = normalize((m as any).title);
+      const director = normalize((m as any).director);
+      const genre = normalize((m as any).genre);
+      const rating = Number((m as any).rating ?? 0);
+      const year = Number((m as any).year ?? 0);
+
+      // جست‌وجوی سریع (LateInput هدر): title/director/genre
+      const quickPass = q
+        ? title.includes(q) || director.includes(q) || genre.includes(q)
+        : true;
+
+      // فیلترهای پیشرفته
+      const titlePass = t ? title.includes(t) : true;
+      const directorPass = d ? director.includes(d) : true;
+      const genrePass = g ? genre.includes(g) : true;
+
+      const ratingMinPass = rMin != null ? rating >= rMin : true;
+      const ratingMaxPass = rMax != null ? rating <= rMax : true;
+
+      const yearMinPass = yMin != null ? year >= yMin : true;
+      const yearMaxPass = yMax != null ? year <= yMax : true;
+
+      return (
+        quickPass &&
+        titlePass &&
+        directorPass &&
+        genrePass &&
+        ratingMinPass &&
+        ratingMaxPass &&
+        yearMinPass &&
+        yearMaxPass
+      );
+    });
+  }, [movies, debouncedSearch, adv]);
+
   return (
     <div className="home-container min-h-screen bg-white">
       <Header
         isScrolled={isScrolled}
-        onAddMovieClick={() => setShowAddForm(!showAddForm)}
+        // دکمه Advanced Search در هدر
+        onToggleAdvancedSearch={() => setShowAdvanced((prev) => !prev)}
+        showAdvanced={showAdvanced}
+        // دکمه Add Movie را پاس نده تا در هدر نمایش داده نشود (فقط در Admin)
+        // onAddMovieClick={() => setShowAddForm(!showAddForm)}
       />
+
       {/* Mobile Search */}
       <div className="md:hidden px-4 pt-20 pb-4">
         <LateInput
           value={search}
           onChange={setSearch}
-          onDebouncedChange={setDebouncedSearch}
+          onDebouncedChange={setSearch}
           debounce={500}
         />
       </div>
 
-      <main className="container mx-auto px-4 pt-24 pb-12">
+      <main className="container mx-auto px-4 pt-6 md:pt-24 pb-12">
+        {/* پنل جست‌وجوی پیشرفته */}
+        {showAdvanced && (
+          <div className="mb-6 animate-fadeIn">
+            <AdvancedSearch value={adv} onChange={setAdv} />
+          </div>
+        )}
+
+        {/* فرم افزودن فیلم (اگر از قبل همین رفتار را در Home می‌خواستی) */}
         {showAddForm && (
           <AddMovieForm
             onAdd={() => {

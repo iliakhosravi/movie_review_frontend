@@ -17,7 +17,7 @@
       "genre": "Action",
       "year": 2008,
       "director": "Christopher Nolan",
-      "rating": 3,
+      "rating": 8.3,
       "description": "Batman faces his greatest psychological and physical tests when the menacing Joker wreaks havoc on Gotham City.",
       "poster": "/images/darkNight.jpg",
       "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4"
@@ -28,7 +28,7 @@
       "genre": "Sci-Fi",
       "year": 2010,
       "director": "Christopher Nolan",
-      "rating": 8.8,
+      "rating": 9.7,
       "description": "A thief who steals corporate secrets through dream-sharing technology is given the task of planting an idea.",
       "poster": "/images/inception.jpg",
       "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4"
@@ -521,6 +521,18 @@
       "email": "بتسیبسنب",
       "bio": "",
       "is_admin": true
+    },
+    {
+      "id": "26ec",
+      "name": "kia",
+      "password": "kiankian",
+      "avatarUrl": "icon.png"
+    },
+    {
+      "id": "2a3f",
+      "name": "kian1",
+      "password": "kiankian",
+      "avatarUrl": "icon.png"
     }
   ],
   "comments": [
@@ -558,11 +570,56 @@
       "text": "hi m",
       "rating": 7,
       "createdAt": "2025-08-13T11:02:24.761Z"
+    },
+    {
+      "id": "5c5b",
+      "movieId": "2",
+      "userId": "b462",
+      "userName": "kian",
+      "text": "ali",
+      "rating": 9,
+      "createdAt": "2025-08-13T11:10:57.755Z"
+    },
+    {
+      "id": "ad94",
+      "movieId": 3,
+      "userId": "b462",
+      "userName": "kian",
+      "text": "سشم",
+      "rating": 9,
+      "createdAt": "2025-08-13T14:57:43.164Z"
+    },
+    {
+      "id": "c4a4",
+      "movieId": 3,
+      "userId": 1,
+      "userName": "kian12347453w4r4wr3w3",
+      "text": "اه",
+      "rating": 10,
+      "createdAt": "2025-08-13T15:26:14.776Z"
+    },
+    {
+      "id": "d06d",
+      "movieId": 2,
+      "userId": "2a3f",
+      "userName": "kian1",
+      "text": "salam",
+      "rating": 10,
+      "createdAt": "2025-08-13T15:28:01.939Z"
+    },
+    {
+      "id": "5dbf",
+      "movieId": 3,
+      "userId": "2a3f",
+      "userName": "kian1",
+      "text": "kia",
+      "rating": 10,
+      "createdAt": "2025-08-13T18:13:11.823Z"
     }
   ],
   "favorites": [
     {
-      "id": 1,
+      "id": "1",
       "userId": "ee95",
       "movieId": "2",
       "createdAt": "2024-08-13T12:00:00.000Z"
@@ -584,6 +641,12 @@
       "userId": "b462",
       "movieId": "1",
       "createdAt": "2025-08-13T11:03:56.332Z"
+    },
+    {
+      "id": "aad9",
+      "userId": "b462",
+      "movieId": "5",
+      "createdAt": "2025-08-13T14:03:24.366Z"
     }
   ]
 }

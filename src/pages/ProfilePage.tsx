@@ -14,7 +14,7 @@ import type { Movie } from "../types/Movie";
 import type { Comment } from "../types/Comment";
 import type { Favorite } from "../types/Favorite";
 
-type Tab = "profile" | "favorites" | "my-comments";
+type Tab = "profile" | "favorites" | "my-comments" | "recommendations";
 const toStr = (v: number | string | undefined | null) => String(v ?? "");
 
 const ProfilePage = () => {
@@ -29,6 +29,7 @@ const ProfilePage = () => {
     email: (user as any)?.email || "",
     bio: (user as any)?.bio || "",
     avatarUrl: (user as any)?.avatarUrl || "",
+    favoriteGenre: (user as any)?.favoriteGenre || "", // NEW
   });
 
   const [tab, setTab] = useState<Tab>("profile");
@@ -57,6 +58,7 @@ const ProfilePage = () => {
       email: (user as any).email || "",
       bio: (user as any).bio || "",
       avatarUrl: (user as any).avatarUrl || "",
+      favoriteGenre: (user as any).favoriteGenre || "", // NEW
     });
   }, [user, navigate]);
 
@@ -109,7 +111,7 @@ const ProfilePage = () => {
         return;
       }
 
-      // 2) fetch each movie by /movies/:id (سازگار با APIهایی که فیلتر چندآی‌دی را پشتیبانی نمی‌کنند)
+      // 2) fetch each movie by /movies/:id
       const results: Movie[] = [];
       for (const mid of movieIds) {
         try {
@@ -118,7 +120,7 @@ const ProfilePage = () => {
           );
           if (res.data) results.push(res.data);
         } catch {
-          // اگر یک آیتم خطا داد، بقیه را ادامه بده
+          // ignore single item error
         }
       }
       setFavMovies(results);
@@ -244,6 +246,17 @@ const ProfilePage = () => {
             >
               My Comments
             </button>
+            {/* NEW: Recommendations tab */}
+            <button
+              onClick={() => setTab("recommendations")}
+              className={`px-4 py-2 rounded-xl border ${
+                tab === "recommendations"
+                  ? "bg-yellow-400 text-yellow-900 border-yellow-300"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-yellow-50"
+              }`}
+            >
+              Recommendations
+            </button>
           </div>
 
           <button
@@ -351,6 +364,31 @@ const ProfilePage = () => {
                   )}
                 </div>
 
+                {/* NEW: Favorite Genre */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Favorite Genre
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={formData.favoriteGenre}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          favoriteGenre: e.target.value,
+                        })
+                      }
+                      className="w-full border-2 border-yellow-400 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 text-lg"
+                      placeholder="e.g. Sci-Fi, Drama, Action"
+                    />
+                  ) : (
+                    <p className="text-lg text-gray-600">
+                      {(user as any).favoriteGenre || "Not set"}
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
                   {!isEditing ? (
                     <button
@@ -369,6 +407,7 @@ const ProfilePage = () => {
                             email: (user as any).email || "",
                             bio: (user as any).bio || "",
                             avatarUrl: (user as any).avatarUrl || "",
+                            favoriteGenre: (user as any).favoriteGenre || "", // NEW
                           });
                         }}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-xl font-semibold transition-colors"
@@ -497,6 +536,29 @@ const ProfilePage = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB: RECOMMENDATIONS (NEW) */}
+        {tab === "recommendations" && (
+          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-yellow-300/60 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Icon name="InfoIcon" size={22} className="text-yellow-500" />
+                Recommendations
+              </h2>
+              <span className="text-sm text-gray-500">
+                Based on your favorite genre:{" "}
+                <strong className="text-gray-700">
+                  {(user as any)?.favoriteGenre || "—"}
+                </strong>
+              </span>
+            </div>
+
+            {/* Placeholder – بعداً با API پر میشه */}
+            <div className="border-2 border-dashed border-yellow-200 rounded-2xl p-8 text-center text-gray-500">
+              No recommendations yet.
+            </div>
           </div>
         )}
 

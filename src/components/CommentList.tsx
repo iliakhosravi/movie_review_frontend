@@ -1,66 +1,85 @@
-// src/components/CommentList.tsx
-import { useEffect, useState } from "react";
-import { api } from "../services/api";
+import { useMemo } from "react";
 import type { Comment } from "../types/Comment";
-import StarRating from "./StarRating";
-import { COMMENTS_ENDPOINT } from "../constants/api";
+import { useUserStore } from "../store";
+import Icon from "./Icon";
 
-const CommentList = ({ movieId }: { movieId: number | string }) => {
-  const [items, setItems] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface Props {
+  comments: Comment[];
+  onDelete: (id: number) => void;
+  deletingId: number | null;
+  className?: string;
+}
 
-  const fetchComments = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get<Comment[]>(
-        `${COMMENTS_ENDPOINT}?movieId=${encodeURIComponent(
-          String(movieId)
-        )}&_sort=createdAt&_order=desc`
-      );
-      setItems(res.data || []);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to load comments");
-    } finally {
-      setLoading(false);
-    }
-  };
+const CommentList = ({
+  comments,
+  onDelete,
+  deletingId,
+  className = "",
+}: Props) => {
+  const user = useUserStore((s) => s.user);
 
-  useEffect(() => {
-    fetchComments();
-  }, [movieId]);
-
-  if (loading) return <div className="text-gray-500">Loading comments…</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  const sorted = useMemo(
+    () =>
+      [...comments].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
+    [comments]
+  );
 
   return (
-    <div className="space-y-4">
-      {items.length === 0 && (
+    <div className={`space-y-4 ${className}`}>
+      {sorted.length === 0 && (
         <div className="text-gray-500">No comments yet. Be the first!</div>
       )}
 
-      {items.map((c) => (
-        <div
-          key={String(c.id)}
-          className="bg-white/90 backdrop-blur-xl rounded-2xl shadow border border-yellow-200 p-4"
-        >
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="font-semibold text-gray-800">
-              {c.userName || `User #${c.userId}`}
-              <span className="ml-2 text-sm text-gray-500">
-                {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
-              </span>
+      {sorted.map((c) => {
+        const canDelete =
+          !!user && (user.is_admin || String(user.id) === String(c.userId));
+        return (
+          <div
+            key={c.id}
+            className="flex items-start gap-3 border border-yellow-200 rounded-2xl p-4 bg-white/90"
+          >
+            {/* Avatar bubble */}
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 flex items-center justify-center text-yellow-900 font-bold">
+              {(c.userName || "?").slice(0, 1).toUpperCase()}
             </div>
-            <div className="flex items-center gap-2">
-              <StarRating value={Number(c.rating) || 0} readOnly max={10} />
-              <span className="text-sm text-gray-600">{c.rating}/10</span>
+
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-gray-800">
+                    {c.userName}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(c.createdAt).toLocaleString()}
+                  </span>
+                </div>
+
+                <span className="inline-flex items-center gap-1 text-yellow-700 font-semibold">
+                  <Icon name="StarIcon" size={18} className="text-yellow-500" />
+                  {c.rating}/10
+                </span>
+              </div>
+
+              <p className="text-gray-700 mt-1 whitespace-pre-wrap">{c.text}</p>
+
+              {canDelete && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => onDelete(c.id)}
+                    disabled={deletingId === c.id}
+                    className="text-sm text-red-600 hover:text-red-700 font-semibold disabled:opacity-60"
+                  >
+                    {deletingId === c.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-          <p className="mt-2 text-gray-700 whitespace-pre-wrap">{c.text}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
