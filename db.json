@@ -2,15 +2,12 @@
   "movies": [
     {
       "id": "1",
-      "title": "Downton Abbey",
-      "genre": "Drama",
+      "title": "Downton Abbey illia",
       "year": 2004,
-      "director": "Guy Ritchie",
-      "rating": 8.5,
       "description": "A family drama set in the 19th century, with a focus on the lives of the Crawley family and their servants.",
-      "poster": "/images/downton.jpg",
-      "videoUrl": "/videos/FUM-Logic-Lecture01-radix_conversion2.mp4",
-      "releaseDate": "2025-07-28T20:05:00.000Z"
+      "posterUrl": "",
+      "categoryId": null,
+      "genreIds": []
     },
     {
       "id": "2",
@@ -504,10 +501,23 @@
       "avatarUrl": "icon.png"
     },
     {
-      "id": "2714",
-      "name": "ilia",
-      "password": "123",
-      "avatarUrl": "icon.png"
+      "id": "b462",
+      "name": "kian",
+      "password": "kiankian",
+      "avatarUrl": "icon.png",
+      "email": "بتسیبسنب",
+      "bio": ""
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "movieId": 1,
+      "userId": 1,
+      "userName": "Admin",
+      "text": "Great movie!",
+      "createdAt": "2025-08-13T10:00:00.000Z"
     }
   ]
+
 }
