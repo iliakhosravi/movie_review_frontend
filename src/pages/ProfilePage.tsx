@@ -1,12 +1,15 @@
 // src/pages/ProfilePage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import { api, authApi } from "../services/api";
 import {
-  MOVIES_ENDPOINT,
-  COMMENTS_ENDPOINT,
-  FAVORITES_ENDPOINT,
-  USERS_ENDPOINT,
+  USER_UPDATE_URL,
+  FAVORITES_ME_URL,
+  MOVIE_DETAIL_URL,
+  COMMENT_DELETE_MY_URL,
+  COMMENT_LIST_MY_URL,
+  COMMENT_EDIT_MY_URL
+
 } from "../constants/api";
 import { useUserStore, useErrorStore } from "../store";
 import Icon from "../components/Icon";
@@ -68,7 +71,7 @@ const ProfilePage = () => {
     setIsLoading(true);
     clearError();
     try {
-      const response = await api.put(`${USERS_ENDPOINT}/${user.id}`, {
+      const response = await authApi.put(USER_UPDATE_URL, {
         ...user,
         ...formData,
       });
@@ -96,11 +99,7 @@ const ProfilePage = () => {
     try {
       const userIdStr = toStr(user.id);
       // 1) get favorites for this user
-      const favRes = await api.get<Favorite[]>(
-        `${FAVORITES_ENDPOINT}?userId=${encodeURIComponent(
-          userIdStr
-        )}&_sort=createdAt&_order=desc`
-      );
+      const favRes = await authApi.get<Favorite[]>(FAVORITES_ME_URL);
       const favs = favRes.data || [];
       const movieIds = [
         ...new Set(favs.map((f) => toStr(f.movieId)).filter(Boolean)),
@@ -115,8 +114,8 @@ const ProfilePage = () => {
       const results: Movie[] = [];
       for (const mid of movieIds) {
         try {
-          const res = await api.get<Movie>(
-            `${MOVIES_ENDPOINT}/${encodeURIComponent(mid)}`
+          const res = await authApi.get<Movie>(
+            MOVIE_DETAIL_URL(Number(mid))
           );
           if (res.data) results.push(res.data);
         } catch {
@@ -140,11 +139,7 @@ const ProfilePage = () => {
     setLoadingComments(true);
     try {
       const userIdStr = toStr(user.id);
-      const { data } = await api.get<Comment[]>(
-        `${COMMENTS_ENDPOINT}?userId=${encodeURIComponent(
-          userIdStr
-        )}&_sort=createdAt&_order=desc`
-      );
+      const { data } = await authApi.get<Comment[]>(COMMENT_LIST_MY_URL);
       setMyComments(data || []);
     } finally {
       setLoadingComments(false);
@@ -180,8 +175,8 @@ const ProfilePage = () => {
     setSavingComment(true);
     try {
       const payload = { text: commentText.trim(), rating: commentRating };
-      const { data } = await api.patch<Comment>(
-        `${COMMENTS_ENDPOINT}/${editingComment.id}`,
+      const { data } = await authApi.patch<Comment>(
+        `${COMMENT_EDIT_MY_URL(Number(editingComment.id))}`,
         payload
       );
       setMyComments((prev) =>
@@ -195,7 +190,7 @@ const ProfilePage = () => {
   const deleteComment = async (id: number | string) => {
     if (!confirm("Delete this comment?")) return;
     try {
-      await api.delete(`${COMMENTS_ENDPOINT}/${id}`);
+      await authApi.delete(`${COMMENT_DELETE_MY_URL(Number(id))}`);
       setMyComments((prev) => prev.filter((x) => x.id !== id));
     } catch {}
   };

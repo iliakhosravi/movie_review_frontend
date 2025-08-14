@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../services/api";
-import { MOVIES_ENDPOINT } from "../constants/api";
-import { USERS_ENDPOINT } from "../constants/userApi";
+import { api, authApi } from "../services/api";
+import { MOVIE_LIST_URL, USER_ADMIN_LIST_URL, MOVIE_ADMIN_DELETE_URL, COMMENT_ADMIN_DELETE_URL, USER_ADMIN_DELETE_URL } from "../constants/api";
+// import { USERS_ENDPOINT } from "../constants/userApi";
 import { useUserStore } from "../store";
 import type { Movie } from "../types/Movie";
 import type { User } from "../types/User";
@@ -47,7 +47,7 @@ const AdminPage = () => {
     setLoader("movies", true);
     setError(null);
     try {
-      const res = await api.get<Movie[]>(MOVIES_ENDPOINT);
+      const res = await authApi.get<Movie[]>(MOVIE_LIST_URL);
       setMovies(res.data || []);
     } catch {
       setError("Failed to load movies");
@@ -60,7 +60,7 @@ const AdminPage = () => {
     setLoader("comments", true);
     setError(null);
     try {
-      const res = await api.get<Comment[]>(
+      const res = await authApi.get<Comment[]>(
         `${COMMENTS_ENDPOINT}?_sort=createdAt&_order=${commentSort}`
       );
       setComments(res.data || []);
@@ -75,7 +75,7 @@ const AdminPage = () => {
     setLoader("users", true);
     setError(null);
     try {
-      const res = await api.get<User[]>(USERS_ENDPOINT);
+      const res = await authApi.get<User[]>(USER_ADMIN_LIST_URL);
       setUsers(res.data || []);
     } catch {
       setError("Failed to load users");
@@ -136,7 +136,7 @@ const AdminPage = () => {
   const handleDeleteMovie = async (id: number | string) => {
     if (!confirm("Delete this movie?")) return;
     try {
-      await api.delete(`${MOVIES_ENDPOINT}/${id}`);
+      await authApi.delete(`${MOVIE_ADMIN_DELETE_URL(Number(id))}`);
       setMovies((prev) => prev.filter((m) => String(m.id) !== String(id)));
     } catch {
       setError("Failed to delete movie");
@@ -148,7 +148,7 @@ const AdminPage = () => {
     movieId?: number | string
   ) => {
     try {
-      await api.delete(`${COMMENTS_ENDPOINT}/${id}`);
+      await authApi.delete(`${COMMENT_ADMIN_DELETE_URL(Number(id))}`);
       setComments((prev) => prev.filter((c) => c.id !== id));
       if (movieId != null) {
         // بعد از حذف، میانگین را دوباره محاسبه کن
@@ -165,7 +165,7 @@ const AdminPage = () => {
       return;
     }
     try {
-      await api.delete(`${USERS_ENDPOINT}/${id}`);
+      await authApi.delete(`${USER_ADMIN_DELETE_URL(Number(id))}`);
       setUsers((prev) => prev.filter((u) => String(u.id) !== String(id)));
     } catch {
       setError("Failed to delete user");

@@ -1,13 +1,14 @@
 // src/pages/Home.tsx
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../services/api";
+import { api, authApi } from "../services/api";
 import type { Movie } from "../types/Movie";
 import MovieList from "../components/MovieList";
 import AddMovieForm from "../components/AddMovieForm";
 import LateInput from "../components/LateInput";
 import Header from "../components/Header";
-import { MOVIES_ENDPOINT } from "../constants/api";
-import { USERS_ENDPOINT } from "../constants/userApi";
+// import { MOVIES_ENDPOINT } from "../constants/api";
+// import { USERS_ENDPOINT } from "../constants/userApi";
+import { MOVIE_LIST_URL, USER_ME_URL } from "../constants/api";
 import { useUserStore, useUIStore } from "../store";
 import AdvancedSearch, {
   type AdvancedFilters,
@@ -55,7 +56,7 @@ const Home = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const response = await api.get<Movie[]>(MOVIES_ENDPOINT);
+        const response = await authApi.get<Movie[]>(MOVIE_LIST_URL);
         setMovies(response.data);
       } catch (error) {
         console.error("Failed to fetch movies:", error);
@@ -70,7 +71,7 @@ const Home = () => {
       try {
         const userId = localStorage.getItem("userId");
         if (userId) {
-          const response = await api.get(`${USERS_ENDPOINT}/${userId}`);
+          const response = await authApi.get(USER_ME_URL);
           setUser(response.data);
         }
       } catch {

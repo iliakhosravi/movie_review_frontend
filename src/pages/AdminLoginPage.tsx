@@ -5,12 +5,13 @@ import { authApi, setAuthToken } from "../services/api";
 import { useUserStore, useErrorStore } from "../store";
 import Icon from "../components/Icon";
 import type { User } from "../types/User";
+import { USER_LOGIN_URL, USER_ME_URL,  } from "../constants/api";
 
 type AnyUser = Partial<User> & Record<string, any>;
 
 // Adjust these if your backend paths differ
-const LOGIN_PATH = "/api/user/login/";
-const ME_PATH = "/api/user/me/";
+// const LOGIN_PATH = "/api/user/login/";
+// const ME_PATH = "/api/user/me/";
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +34,7 @@ const AdminLoginPage = () => {
     try {
       // 1) Login -> expect { token, ... }
       const loginRes = await authApi.post(
-        LOGIN_PATH,
+        USER_LOGIN_URL,
         { email, password },
         { withCredentials: false }
       );
@@ -48,7 +49,7 @@ const AdminLoginPage = () => {
       setAuthToken(logged.token);
 
       // 3) Fetch profile -> must include is_admin
-      const meRes = await authApi.get(ME_PATH);
+      const meRes = await authApi.get(USER_ME_URL);
       const profile = meRes.data as AnyUser;
 
       if (profile?.is_admin !== true) {
