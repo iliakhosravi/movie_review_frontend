@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../services/api";
 import type { Movie } from "../types/Movie";
 import MovieList from "../components/MovieList";
-import AddMovieForm from "../components/AddMovieForm";
 import LateInput from "../components/LateInput";
 import Header from "../components/Header";
 import { MOVIES_ENDPOINT } from "../constants/api";
@@ -17,20 +16,12 @@ const normalize = (v: unknown) => (v ?? "").toString().toLowerCase().trim();
 
 const Home = () => {
   const setUser = useUserStore((s) => s.setUser);
-  const {
-    search,
-    setSearch,
-    view,
-    showAddForm,
-    setShowAddForm,
-    isScrolled,
-    setIsScrolled,
-  } = useUIStore();
+  const { search, setSearch, view, isScrolled, setIsScrolled } = useUIStore();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // فیلترهای پیشرفته
+  // Advanced search filters
   const [adv, setAdv] = useState<AdvancedFilters>({
     title: "",
     director: "",
@@ -41,17 +32,17 @@ const Home = () => {
     yearMax: "",
   });
 
-  // نمایش/عدم نمایش پنل جست‌وجوی پیشرفته (کنترل با دکمه در Header)
+  // Show/Hide Advanced Search panel (toggled via Header button)
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // مدیریت اسکرول برای هدر
+  // Sticky header scroll state
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
-  // گرفتن لیست فیلم‌ها
+  // Fetch movies
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -64,7 +55,7 @@ const Home = () => {
     fetchMovies();
   }, []);
 
-  // گرفتن کاربر لاگین‌شده (در صورت وجود)
+  // Fetch logged-in user (if any)
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -80,13 +71,13 @@ const Home = () => {
     fetchUser();
   }, [setUser]);
 
-  // debounce برای سرچ سریع هدر (useUIStore.search)
+  // Debounce quick search from header
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(t);
   }, [search]);
 
-  // اعمال فیلترها
+  // Apply filters
   const filteredMovies = useMemo(() => {
     const q = normalize(debouncedSearch);
     const t = normalize(adv.title);
@@ -105,12 +96,12 @@ const Home = () => {
       const rating = Number((m as any).rating ?? 0);
       const year = Number((m as any).year ?? 0);
 
-      // جست‌وجوی سریع (LateInput هدر): title/director/genre
+      // Quick search (title/director/genre)
       const quickPass = q
         ? title.includes(q) || director.includes(q) || genre.includes(q)
         : true;
 
-      // فیلترهای پیشرفته
+      // Advanced filters
       const titlePass = t ? title.includes(t) : true;
       const directorPass = d ? director.includes(d) : true;
       const genrePass = g ? genre.includes(g) : true;
@@ -138,14 +129,13 @@ const Home = () => {
     <div className="home-container min-h-screen bg-white">
       <Header
         isScrolled={isScrolled}
-        // دکمه Advanced Search در هدر
+        // Advanced Search toggle in header
         onToggleAdvancedSearch={() => setShowAdvanced((prev) => !prev)}
         showAdvanced={showAdvanced}
-        // دکمه Add Movie را پاس نده تا در هدر نمایش داده نشود (فقط در Admin)
-        // onAddMovieClick={() => setShowAddForm(!showAddForm)}
+        // No AddMovie button here; admins add movies in Admin panel
       />
 
-      {/* Mobile Search */}
+      {/* Mobile quick search */}
       <div className="md:hidden px-4 pt-20 pb-4">
         <LateInput
           value={search}
@@ -156,21 +146,11 @@ const Home = () => {
       </div>
 
       <main className="container mx-auto px-4 pt-6 md:pt-24 pb-12">
-        {/* پنل جست‌وجوی پیشرفته */}
+        {/* Advanced Search Panel */}
         {showAdvanced && (
           <div className="mb-6 animate-fadeIn">
             <AdvancedSearch value={adv} onChange={setAdv} />
           </div>
-        )}
-
-        {/* فرم افزودن فیلم (اگر از قبل همین رفتار را در Home می‌خواستی) */}
-        {showAddForm && (
-          <AddMovieForm
-            onAdd={() => {
-              setDebouncedSearch("");
-              setShowAddForm(false);
-            }}
-          />
         )}
 
         <MovieList movies={filteredMovies} view={view} />
