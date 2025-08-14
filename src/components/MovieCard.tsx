@@ -3,6 +3,7 @@ import type { Movie } from "../types/Movie";
 import Timer from "./Timer";
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
+import FavoriteButton from "./FavoriteButton"; // اضافه شد
 
 interface MovieCardProps {
   movie: Movie;
@@ -132,6 +133,11 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             </span>
           </p>
         )}
+
+        {/* Favorite Button */}
+        <div className="mt-3">
+          <FavoriteButton movieId={movie.id} />
+        </div>
       </div>
     </div>
   );
