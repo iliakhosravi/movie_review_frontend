@@ -3,7 +3,7 @@ import type { Movie } from "../types/Movie";
 import Timer from "./Timer";
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
-import FavoriteButton from "./FavoriteButton"; // اضافه شد
+import FavoriteButton from "./FavoriteButton";
 
 interface MovieCardProps {
   movie: Movie;
@@ -45,8 +45,13 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             : "w-full h-2/3"
         }`}
       >
+        {/* دکمه Favorite بالای پوستر */}
+        <div className="absolute top-2 right-2 z-10">
+          <FavoriteButton movieId={movie.id} />
+        </div>
+
         {/* Rating Badge */}
-        <div className="rating-badge">
+        <div className="rating-badge absolute top-2 left-2 z-10">
           <Icon name="StarIcon" size={16} className="w-4 h-4" />
           <span>{movie.rating ?? "-"}</span>
         </div>
@@ -133,11 +138,6 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             </span>
           </p>
         )}
-
-        {/* Favorite Button */}
-        <div className="mt-3">
-          <FavoriteButton movieId={movie.id} />
-        </div>
       </div>
     </div>
   );
