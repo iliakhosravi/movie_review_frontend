@@ -1,5 +1,5 @@
 // src/pages/MovieDetail.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api, authApi } from "../services/api";
 import type { Movie } from "../types/Movie";
@@ -7,7 +7,7 @@ import type { Comment } from "../types/Comment";
 import Icon from "../components/Icon";
 import VideoPlayer from "../components/VideoPlayer";
 import { useUserStore } from "../store";
-import { MOVIE_DETAIL_URL, COMMENT_LIST_BY_MOVIE_ID, COMMENT_CREATE_URL, COMMENT_DELETE_MY_URL } from "../constants/api";
+import { MOVIE_DETAIL_URL, COMMENT_LIST_BY_MOVIE_ID, COMMENT_CREATE_URL, COMMENT_DELETE_MY_URL, MOVIE_INCREASE_VIEWS_URL, MOVIE_QUALITY_URL } from "../constants/api";
 import CommentList from "../components/CommentList";
 import CommentForm from "../components/CommentForm";
 import { recalculateMovieRating } from "../utils/recalculateMovieRating";
@@ -105,10 +105,42 @@ const MovieDetail = () => {
   };
 
   // Cast helper
-  const hasCast = useMemo(
-    () => Array.isArray(movie?.cast) && (movie!.cast as string[]).length > 0,
-    [movie]
-  );
+  const renderCast = (cast: string | undefined) => {
+    if (!cast) return <div className="text-gray-500 italic">No cast available</div>;
+    return <div className="text-gray-700">{cast}</div>;
+  };
+
+  useEffect(() => {
+    const increaseViews = async () => {
+      try {
+        await authApi.post(MOVIE_INCREASE_VIEWS_URL(movieId));
+      } catch (error) {
+        console.error("Failed to increase movie views", error);
+      }
+    };
+
+    if (!Number.isNaN(movieId)) {
+      increaseViews();
+    }
+    // This effect runs only once when the component mounts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch movie quality (grade by users review)
+  useEffect(() => {
+    const fetchMovieQuality = async () => {
+      try {
+        const res = await authApi.get(MOVIE_QUALITY_URL(movieId));
+        setMovie((prev) => prev ? { ...prev, gradeByUsersReview: res.data.gradeByUsersReview } : prev);
+      } catch (error) {
+        console.error("Failed to fetch movie quality", error);
+      }
+    };
+
+    if (!Number.isNaN(movieId)) {
+      fetchMovieQuality();
+    }
+  }, [movieId]);
 
   if (loading) return <p>Loading...</p>;
   if (error || !movie) {
@@ -229,22 +261,7 @@ const MovieDetail = () => {
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">
                   Cast
                 </h4>
-                {hasCast ? (
-                  <div className="flex flex-wrap gap-2">
-                    {movie.cast!.map((actor, idx) => (
-                      <span
-                        key={`${actor}-${idx}`}
-                        className="px-3 py-1 rounded-full bg-white border border-yellow-200 text-gray-700 shadow-sm"
-                      >
-                        {actor}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-gray-500 italic">
-                    No cast information
-                  </div>
-                )}
+                {renderCast(movie.cast)}
               </div>
 
               {/* Views (block with placeholder) */}

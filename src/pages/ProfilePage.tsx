@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "../services/api";
 import {
   USER_UPDATE_URL,
+  USER_ME_URL,
   FAVORITES_ME_URL,
   MOVIE_DETAIL_URL,
+  MOVIE_SUGGEST_URL,
   COMMENT_DELETE_MY_URL,
   COMMENT_LIST_MY_URL,
   COMMENT_EDIT_MY_URL,
@@ -44,6 +46,10 @@ const ProfilePage = () => {
   const [myComments, setMyComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
 
+  // Recommendations
+  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
   // Edit comment modal
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [commentText, setCommentText] = useState("");
@@ -62,7 +68,38 @@ const ProfilePage = () => {
       avatarUrl: (user as any).avatarUrl || "",
       favoriteGenre: (user as any).favoriteGenre || "",
     });
+
   }, [user, navigate]);
+
+  // useEffect(() => {
+  //   if (formData.favoriteGenre) {
+  //     localStorage.setItem("favoriteGenre", formData.favoriteGenre);
+  //   }
+  // }, [formData.favoriteGenre]);
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const userResponse = await authApi.get(USER_ME_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(userResponse.data);
+      } catch (error) {
+        console.error("Failed to fetch user data", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // ---------- Save profile ----------
   const handleSave = async () => {
@@ -70,11 +107,16 @@ const ProfilePage = () => {
     setIsLoading(true);
     clearError();
     try {
-      const response = await authApi.put(USER_UPDATE_URL, {
+      // Update the profile
+      await authApi.put(USER_UPDATE_URL, {
         ...user,
         ...formData,
       });
-      setUser(response.data);
+      
+      // Fetch the updated user data from backend
+      const userResponse = await authApi.get(USER_ME_URL);
+      setUser(userResponse.data);
+      
       setIsEditing(false);
     } catch {
       showError("Failed to update profile");
@@ -172,6 +214,26 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (tab === "my-comments") fetchMyComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, user?.id]);
+
+  // ---------- Recommendations ----------
+  const fetchRecommendations = async () => {
+    if (!user?.id) return;
+    setLoadingRecommendations(true);
+    try {
+      const { data } = await authApi.get<Movie[]>(MOVIE_SUGGEST_URL);
+      setRecommendedMovies(data || []);
+    } catch (e) {
+      console.warn("[Recommendations] failed", e);
+      setRecommendedMovies([]);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tab === "recommendations") fetchRecommendations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, user?.id]);
 
@@ -572,18 +634,83 @@ const ProfilePage = () => {
                 <Icon name="InfoIcon" size={22} className="text-yellow-500" />
                 Recommendations
               </h2>
-              <span className="text-sm text-gray-500">
-                Based on your favorite genre:{" "}
-                <strong className="text-gray-700">
-                  {(user as any)?.favoriteGenre || "—"}
-                </strong>
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">
+                  Based on your favorite genre:{" "}
+                  <strong className="text-gray-700">
+                    {(user as any)?.favoriteGenre || "—"}
+                  </strong>
+                </span>
+                <button
+                  onClick={fetchRecommendations}
+                  className="px-4 py-2 rounded-xl bg-white border border-gray-200 hover:bg-yellow-50"
+                >
+                  Refresh
+                </button>
+              </div>
             </div>
 
-            {/* Placeholder – بعداً با API پر میشه */}
-            <div className="border-2 border-dashed border-yellow-200 rounded-2xl p-8 text-center text-gray-500">
-              No recommendations yet.
+            {/* Debug info */}
+            <div className="mb-4 p-3 bg-gray-100 rounded text-xs text-gray-600">
+              Debug: favoriteGenre="{(user as any)?.favoriteGenre}", 
+              loadingRecommendations={loadingRecommendations.toString()}, 
+              recommendedMovies.length={recommendedMovies.length}
             </div>
+
+            {!(user as any)?.favoriteGenre ? (
+              <div className="border-2 border-dashed border-yellow-200 rounded-2xl p-8 text-center text-gray-500">
+                <Icon name="InfoIcon" size={48} className="mx-auto mb-3 text-gray-400" />
+                <p className="text-lg font-medium mb-2">No favorite genre set</p>
+                <p className="text-sm">Set your favorite genre in your profile to get personalized recommendations!</p>
+              </div>
+            ) : loadingRecommendations ? (
+              <div className="text-gray-600 text-center py-8">Loading recommendations…</div>
+            ) : recommendedMovies.length === 0 ? (
+              <div className="border-2 border-dashed border-yellow-200 rounded-2xl p-8 text-center text-gray-500">
+                <Icon name="InfoIcon" size={48} className="mx-auto mb-3 text-gray-400" />
+                <p className="text-lg font-medium mb-2">No recommendations found</p>
+                <p className="text-sm">No movies found for your favorite genre: <strong>{(user as any)?.favoriteGenre}</strong></p>
+                <p className="text-xs mt-2 text-gray-400">Debug: {recommendedMovies.length} movies loaded</p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-500 mb-4">Found {recommendedMovies.length} recommendations</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {recommendedMovies.map((movie) => (
+                    <div
+                      key={String(movie.id)}
+                      className="rounded-2xl border border-yellow-200 shadow bg-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/movie/${movie.id}`)}
+                    >
+                      <img
+                        src={(movie as any).poster || (movie as any).posterUrl}
+                        alt={movie.title}
+                        className="w-full h-56 object-cover"
+                      />
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-bold text-gray-800 truncate">{movie.title}</h3>
+                          <span className="inline-flex items-center gap-1 text-yellow-700 flex-shrink-0">
+                            <Icon
+                              name="StarIcon"
+                              size={16}
+                              className="text-yellow-500"
+                            />
+                            {(movie as any).rating ?? 0}/10
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          {(movie as any).genre} • {(movie as any).year}
+                        </div>
+                        <p className="text-sm text-gray-700 line-clamp-2">
+                          {(movie as any).description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

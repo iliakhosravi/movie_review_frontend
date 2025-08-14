@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { authApi } from "../services/api";
 import {
   FAVORITES_ME_URL,
@@ -21,6 +21,7 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
   const user = useUserStore((s) => s.user);
   const [loading, setLoading] = useState(false);
   const [fav, setFav] = useState<Favorite | null>(null);
+  const isToggling = useRef(false);
 
   const userIdStr = toStr(user?.id);
   const movieIdStr = toStr(movieId);
@@ -40,8 +41,34 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
         )}&movieId=${encodeURIComponent(movieIdStr)}`
       );
       const list = Array.isArray(data) ? data : [];
-      const item = list.find((f) => toStr(f.movieId) === movieIdStr);
-      setFav(item ?? null);
+      console.log("Favorites API response:", list);
+      
+      // Check if we got favorite objects or movie objects
+      let item: Favorite | null = null;
+      
+      if (list.length > 0) {
+        const firstItem = list[0];
+        // If the response contains favorite objects (has userId, movieId)
+        if ('userId' in firstItem && 'movieId' in firstItem) {
+          item = list.find((f) => toStr(f.movieId) === movieIdStr) ?? null;
+        } 
+        // If the response contains movie objects (has title, director, etc.)
+        else if ('title' in firstItem) {
+          // The API returned movies that are favorited, so check if our movie is in the list
+          const movieExists = list.find((movie: any) => toStr(movie.id) === movieIdStr);
+          if (movieExists) {
+            // Create a synthetic favorite object
+            item = {
+              id: `synthetic-${movieIdStr}`,
+              userId: userIdStr,
+              movieId: movieIdStr,
+              createdAt: new Date().toISOString(),
+            } as Favorite;
+          }
+        }
+      }
+      
+      setFav(item);
     } catch (e) {
       console.warn("[FAV refresh] failed", e);
       setFav(null);
@@ -58,16 +85,22 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
       alert("Please login to use favorites");
       return;
     }
+    
+    // Prevent duplicate calls
+    if (isToggling.current) {
+      return;
+    }
+    
+    isToggling.current = true;
     setLoading(true);
     try {
       if (fav?.id != null) {
-        // حذف
         const old = fav;
-        // optimistic
         setFav(null);
         onChange?.(false);
         try {
-          await authApi.delete(FAVORITE_DELETE_URL(old.id as any)); // id را همانی که هست بفرست
+          // Use movieId for deletion since that's what the API expects
+          await authApi.delete(FAVORITE_DELETE_URL(Number(movieIdStr)));
         } catch (e) {
           // rollback
           setFav(old);
@@ -75,7 +108,6 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
           throw e;
         }
       } else {
-        // ایجاد
         const payload: Favorite = {
           userId: userIdStr,
           movieId: movieIdStr,
@@ -108,6 +140,7 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
       alert("Failed to update favorites");
     } finally {
       setLoading(false);
+      isToggling.current = false;
     }
   };
 

@@ -37,6 +37,7 @@ export const COMMENT_DELETE_MY_URL = (id: number) => `/api/comments/me/${id}/del
 export const COMMENT_GET_BY_ID_URL = (id: number) => `/api/comments/${id}/`;
 export const COMMENT_EDIT_MY_URL = (id: number) => `/api/comments/me/${id}/edit/`;
 export const COMMENT_LIST_MY_URL = "/api/comments/me/";
+export const COMMENT_ADMIN_LIST_ALL_URL = "/api/comments/admin/";
 
 // Admin endpoints
 export const MOVIE_ADMIN_CREATE_URL = "/api/movies/admin/create/";

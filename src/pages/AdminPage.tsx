@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, authApi } from "../services/api";
-import { MOVIE_LIST_URL, USER_ADMIN_LIST_URL, MOVIE_ADMIN_DELETE_URL, COMMENT_ADMIN_DELETE_URL, USER_ADMIN_DELETE_URL } from "../constants/api";
+import { MOVIE_LIST_URL, USER_ADMIN_LIST_URL, MOVIE_ADMIN_DELETE_URL, COMMENT_ADMIN_DELETE_URL, USER_ADMIN_DELETE_URL, COMMENT_ADMIN_LIST_ALL_URL } from "../constants/api";
 // import { USERS_ENDPOINT } from "../constants/userApi";
 import { useUserStore } from "../store";
 import type { Movie } from "../types/Movie";
@@ -10,7 +10,6 @@ import Icon from "../components/Icon";
 import MovieFormModal from "../components/MovieFormModal";
 import { recalculateMovieRating } from "../utils/recalculateMovieRating";
 
-const COMMENTS_ENDPOINT = "/comments";
 
 type Tab = "movies" | "comments" | "users";
 
@@ -61,7 +60,7 @@ const AdminPage = () => {
     setError(null);
     try {
       const res = await authApi.get<Comment[]>(
-        `${COMMENTS_ENDPOINT}?_sort=createdAt&_order=${commentSort}`
+        `${COMMENT_ADMIN_LIST_ALL_URL}?_sort=createdAt&_order=${commentSort}`
       );
       setComments(res.data || []);
     } catch {

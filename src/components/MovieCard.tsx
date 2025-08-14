@@ -21,9 +21,7 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
   const notPublished = (movie as any).releaseDate && release > now;
   const secondsLeft = notPublished ? Math.floor((release - now) / 1000) : 0;
 
-  const castPreview = Array.isArray(movie.cast)
-    ? movie.cast.slice(0, 3).join(", ")
-    : "";
+  const castPreview = movie.cast || "";
 
   return (
     <div

@@ -9,7 +9,7 @@ export interface Movie {
   poster?: string;
   videoUrl?: string;
   trailer?: string; // لینک
-  cast?: string[]; // آرایهٔ بازیگران
+  cast?: string; // آرایهٔ بازیگران
   views?: number; // آمار بازدید
   gradeByUsersReview?: string; // فیلد جدید
 }
