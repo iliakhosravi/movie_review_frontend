@@ -38,6 +38,7 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
         setShowVideo(false);
       }}
     >
+      {/* Poster area */}
       <div
         className={`relative overflow-hidden ${
           view === "list"
@@ -45,37 +46,41 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             : "w-full h-2/3"
         }`}
       >
-        {/* دکمه Favorite بالای پوستر */}
-        <div className="absolute top-2 right-2 z-10">
+        {/* TOP BADGES LAYER */}
+        {/* Rating badge (top-left) */}
+        <div className="absolute top-2 left-2 z-20">
+          <div className="inline-flex items-center gap-1 rounded-full border border-yellow-400/60 bg-black/70 backdrop-blur-sm px-2 py-1 text-xs font-semibold text-yellow-200">
+            <Icon name="StarIcon" size={14} className="text-yellow-300" />
+            <span>{movie.rating ?? "-"}</span>
+          </div>
+        </div>
+
+        {/* Favorite button (top-right) */}
+        <div className="absolute top-2 right-2 z-20">
           <FavoriteButton movieId={movie.id} />
         </div>
 
-        {/* Rating Badge */}
-        <div className="rating-badge absolute top-2 left-2 z-10">
-          <Icon name="StarIcon" size={16} className="w-4 h-4" />
-          <span>{movie.rating ?? "-"}</span>
-        </div>
-
-        {/* Poster */}
-        <div className="w-full h-full relative">
+        {/* Poster image */}
+        <div className="w-full h-full relative z-0">
           <img
             src={movie.poster}
             alt={movie.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Soft gradient overlay (below badges) */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 
-        {/* Timer */}
+        {/* Timer overlay (blocks everything when not published) */}
         {notPublished && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/90 backdrop-blur-sm">
             <Timer seconds={secondsLeft} />
           </div>
         )}
 
         {/* Hover Video */}
         {!notPublished && showVideo && movie.videoUrl && (
-          <div className="absolute inset-0 bg-black">
+          <div className="absolute inset-0 z-30 bg-black">
             <video
               controls
               src={movie.videoUrl}
@@ -88,7 +93,7 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
 
         {/* Hover Content */}
         {hovered && !notPublished && !showVideo && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-black/80 backdrop-blur-sm transition-all duration-300">
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-black/80 backdrop-blur-sm transition-all duration-300">
             <p className="text-white text-sm mb-4 line-clamp-4 text-center">
               {movie.description}
             </p>
@@ -104,7 +109,7 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
         )}
       </div>
 
-      {/* Info */}
+      {/* Info area */}
       <div
         className={`flex flex-col ${
           view === "list" ? "w-2/3 py-4 px-2 h-64 justify-between" : "p-6 h-1/3"
@@ -113,6 +118,7 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
         <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-yellow-500 to-yellow-300 bg-clip-text text-transparent">
           <Link to={`/movies/${movie.id}`}>{movie.title}</Link>
         </h3>
+
         <div className="flex flex-wrap items-center gap-2 text-gray-600 mb-1">
           {movie.genre && <span className="font-semibold">{movie.genre}</span>}
           {movie.genre && <span>•</span>}
@@ -126,9 +132,11 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             </>
           )}
         </div>
+
         {movie.director && (
           <p className="text-gray-500 italic">Directed by {movie.director}</p>
         )}
+
         {!!castPreview && (
           <p className="text-gray-600 text-sm">
             Cast:{" "}
