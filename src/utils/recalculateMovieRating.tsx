@@ -1,22 +1,27 @@
 // src/utils/recalculateMovieRating.ts
-import { api } from "../services/api";
+import { api, authApi } from "../services/api";
 import type { Comment } from "../types/Comment";
-import { MOVIES_ENDPOINT, COMMENTS_ENDPOINT } from "../constants/api";
+import { MOVIE_DETAIL_URL, COMMENT_LIST_BY_MOVIE_ID, MOVIE_UPDATE_RATING_URL } from "../constants/api";
 
 export async function recalculateMovieRating(
   movieId: number | string
 ): Promise<number> {
-  const { data } = await api.get<Comment[]>(
-    `${COMMENTS_ENDPOINT}?movieId=${movieId}`
+  const { data } = await authApi.get<Comment[]>(
+    COMMENT_LIST_BY_MOVIE_ID(Number(movieId))
   );
   const list = data || [];
   if (list.length === 0) {
-    await api.patch(`${MOVIES_ENDPOINT}/${movieId}`, { rating: 0 });
+    await authApi.patch(MOVIE_UPDATE_RATING_URL(Number(movieId)), { rating: 0 });
     return 0;
   }
   const sum = list.reduce((acc, c) => acc + Number(c.rating || 0), 0);
   const avgRaw = sum / list.length;
   const avg = Math.round(avgRaw * 10) / 10;
-  await api.patch(`${MOVIES_ENDPOINT}/${movieId}`, { rating: avg });
+  await authApi.patch(MOVIE_UPDATE_RATING_URL(Number(movieId)), { rating: avg });
   return avg;
 }
+
+
+
+
+

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../services/api"; // اگر با Django کار می‌کنی: import { authApi as api } from '../services/api'
-import { MOVIES_ENDPOINT } from "../constants/api";
+import { api, authApi } from "../services/api"; // اگر با Django کار می‌کنی: import { authApi as api } from '../services/api'
+import { MOVIE_ADMIN_CREATE_URL, MOVIE_ADMIN_EDIT_URL } from "../constants/api";
 import { useUserStore } from "../store";
 import type { Movie } from "../types/Movie";
 
@@ -125,9 +125,9 @@ const MovieFormModal = ({ isOpen, onClose, initial, onSaved }: Props) => {
     try {
       let res;
       if (isEdit && initial?.id != null) {
-        res = await api.put<Movie>(`${MOVIES_ENDPOINT}/${initial.id}`, payload);
+        res = await authApi.put<Movie>(MOVIE_ADMIN_EDIT_URL(initial.id), payload);
       } else {
-        res = await api.post<Movie>(MOVIES_ENDPOINT, payload);
+        res = await authApi.post<Movie>(MOVIE_ADMIN_CREATE_URL, payload);
       }
       onSaved?.(res.data);
       onClose();

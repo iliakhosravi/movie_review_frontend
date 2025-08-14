@@ -1,13 +1,13 @@
 // src/pages/MovieDetail.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { api } from "../services/api";
+import { api, authApi } from "../services/api";
 import type { Movie } from "../types/Movie";
 import type { Comment } from "../types/Comment";
 import Icon from "../components/Icon";
 import VideoPlayer from "../components/VideoPlayer";
 import { useUserStore } from "../store";
-import { COMMENTS_ENDPOINT } from "../constants/api";
+import { MOVIE_DETAIL_URL, COMMENT_LIST_BY_MOVIE_ID, COMMENT_CREATE_URL, COMMENT_DELETE_MY_URL } from "../constants/api";
 import CommentList from "../components/CommentList";
 import CommentForm from "../components/CommentForm";
 import { recalculateMovieRating } from "../utils/recalculateMovieRating";
@@ -34,7 +34,7 @@ const MovieDetail = () => {
     }
     const fetchMovie = async () => {
       try {
-        const res = await api.get<Movie>(`/movies/${movieId}`);
+        const res = await authApi.get<Movie>(MOVIE_DETAIL_URL(movieId));
         setMovie(res.data);
       } catch {
         setError("Movie not found");
@@ -50,10 +50,8 @@ const MovieDetail = () => {
     if (!movieId) return;
     try {
       setLoadingComments(true);
-      const res = await api.get<Comment[]>(
-        `${COMMENTS_ENDPOINT}?movieId=${encodeURIComponent(
-          String(movieId)
-        )}&_sort=createdAt&_order=desc`
+      const res = await authApi.get<Comment[]>(
+        COMMENT_LIST_BY_MOVIE_ID(movieId)
       );
       setComments(res.data || []);
     } finally {
@@ -79,7 +77,7 @@ const MovieDetail = () => {
     const tempId = Math.random();
     setComments((prev) => [{ id: tempId as any, ...payload }, ...prev]);
     try {
-      const res = await api.post<Comment>(COMMENTS_ENDPOINT, payload);
+      const res = await authApi.post<Comment>(COMMENT_CREATE_URL, payload);
       setComments((prev) =>
         prev.map((c) => (c.id === (tempId as any) ? res.data : c))
       );
@@ -97,7 +95,7 @@ const MovieDetail = () => {
     if (!confirm("Delete this comment?")) return;
     try {
       setDeletingId(cid);
-      await api.delete(`${COMMENTS_ENDPOINT}/${cid}`);
+      await authApi.delete(COMMENT_DELETE_MY_URL(cid));
       setComments((prev) => prev.filter((c) => c.id !== cid));
       const avg = await recalculateMovieRating(movieId);
       setMovie((m) => (m ? { ...m, rating: avg } : m));

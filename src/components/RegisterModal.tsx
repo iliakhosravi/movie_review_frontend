@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { api } from '../services/api'
-import { USERS_ENDPOINT } from '../constants/userApi'
+import { api, authApi } from '../services/api'
+// import { USERS_ENDPOINT } from '../constants/userApi'
+import { USER_ME_URL, USER_SIGNUP_URL } from '../constants/api'
 import { useUserStore, useErrorStore } from '../store'
 import Icon from './Icon'
 
@@ -49,7 +50,7 @@ const RegisterModal = ({ isOpen, onClose }: RegisterModalProps) => {
     
     try {
       // Check if user exists
-      const res = await api.get(`${USERS_ENDPOINT}?name=${encodeURIComponent(name)}`)
+      const res = await authApi.get(`${USER_ME_URL}?name=${encodeURIComponent(name)}`)
       const existingUser = res.data.find((u: any) => u.name === name)
       
       if (existingUser) {
@@ -65,7 +66,7 @@ const RegisterModal = ({ isOpen, onClose }: RegisterModalProps) => {
         return
       }
       // Register new user
-      const response = await api.post(USERS_ENDPOINT, { name, password, avatarUrl })
+      const response = await authApi.post(USER_SIGNUP_URL, { name, password, avatarUrl })
       login(response.data)
       // DO NOT navigate or reload, just close modal
       onClose()

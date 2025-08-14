@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../services/api";
-import { FAVORITES_ENDPOINT } from "../constants/api";
+import { api, authApi } from "../services/api";
+import { FAVORITES_ME_URL, FAVORITE_DELETE_URL, FAVORITE_CREATE_URL} from "../constants/api";
 import { useUserStore } from "../store";
 import Icon from "./Icon";
 import type { Favorite } from "../types/Favorite";
@@ -27,8 +27,8 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
       return;
     }
     try {
-      const { data } = await api.get<Favorite[]>(
-        `${FAVORITES_ENDPOINT}?userId=${encodeURIComponent(
+      const { data } = await authApi.get<Favorite[]>(
+        `${FAVORITES_ME_URL}?userId=${encodeURIComponent(
           userIdStr
         )}&movieId=${encodeURIComponent(movieIdStr)}`
       );
@@ -53,7 +53,7 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
         setFav(null);
         onChange?.(false);
         try {
-          await api.delete(`${FAVORITES_ENDPOINT}/${old.id}`);
+          await authApi.delete(FAVORITE_DELETE_URL(Number(old.id)));
         } catch (e) {
           // rollback
           setFav(old);
@@ -70,8 +70,8 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
         setFav({ ...payload, id: Math.random().toString(36).slice(2) });
         onChange?.(true);
         try {
-          const { data } = await api.post<Favorite>(
-            FAVORITES_ENDPOINT,
+          const { data } = await authApi.post<Favorite>(
+            FAVORITE_CREATE_URL,
             payload
           );
           setFav(data);

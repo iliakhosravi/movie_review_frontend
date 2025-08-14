@@ -1,46 +1,90 @@
 import { useState } from 'react'
-import { api } from '../services/api'
-import { USERS_ENDPOINT } from '../constants/userApi'
+import { authApi, setAuthToken } from '../services/api'
+import { USER_LOGIN_URL, USER_SIGNUP_URL } from '../constants/api'
 import { useNavigate, Link } from 'react-router-dom'
 import { useUserStore, useErrorStore } from '../store'
 import Icon from '../components/Icon'
 
 const RegisterPage = () => {
-  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { error, showError } = useErrorStore()
   const { login } = useUserStore()
   const navigate = useNavigate()
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name || !password) {
-      showError('Name and password are required')
-      return
-    }
-    const avatarUrl = "icon.png"
+    // const handleRegister = async (e: React.FormEvent) => {
+  //   e.preventDefault()
+  //   if (!name || !password) {
+  //     showError('Name and password are required')
+  //     return
+  //   }
+  //   const avatarUrl = "icon.png"
+  //   try {
+  //     // Check if user exists
+  //     // const existingUser = await authApi.get(`${USER_CHECK_NAME_URL}?name=${encodeURIComponent(name)}`)
+  //     // const existingUser = res.data.find((u: any) => u.name === name)
+  //     if (existingUser) {
+  //       // Check password
+  //       if (existingUser.password === password) {
+  //         login(existingUser)
+  //         localStorage.setItem('userId', existingUser.id)
+  //         navigate('/')
+  //       } else {
+  //         showError('User already exists with a different password')
+  //       }
+  //       return
+  //     }
+  //     // Register new user
+  //     const response = await authApi.post(USER_SIGNUP_URL, { name, password, avatarUrl })
+  //     login(response.data)
+  //     localStorage.setItem('userId', response.data.id)
+  //     navigate('/')
+  //   } catch (e) {
+  //     showError('Registration or login failed')
+  //   }
+  // }
+
+
+  const handleLoginOrRegister = async (email: string, password: string) => {
     try {
-      // Check if user exists
-      const res = await api.get(`${USERS_ENDPOINT}?name=${encodeURIComponent(name)}`)
-      const existingUser = res.data.find((u: any) => u.name === name)
-      if (existingUser) {
-        // Check password
-        if (existingUser.password === password) {
-          login(existingUser)
-          localStorage.setItem('userId', existingUser.id)
-          navigate('/')
-        } else {
-          showError('User already exists with a different password')
-        }
-        return
+      // Try login first
+      const loginRes = await authApi.post(USER_LOGIN_URL, { email, password })
+
+      // If login succeeds, set token and proceed
+      const { token } = loginRes.data.token
+      if (token) {
+        localStorage.setItem('token', token)
+        setAuthToken(token)
       }
-      // Register new user
-      const response = await api.post(USERS_ENDPOINT, { name, password, avatarUrl })
-      login(response.data)
-      localStorage.setItem('userId', response.data.id)
-      navigate('/')
-    } catch (e) {
-      showError('Registration or login failed')
+      
+      return loginRes.data
+    } catch (loginErr: any) {
+      // If login fails, check error message
+      const errorMsg = loginErr?.response?.data?.detail
+      if (errorMsg === "Invalid credentials" || errorMsg === "User not found" || loginErr?.response?.status === 400) {
+        // Try register
+        try {
+          const registerRes = await authApi.post(USER_SIGNUP_URL, { email, password })
+          
+          // After successful register, try login again
+          const loginRes2 = await authApi.post(USER_LOGIN_URL, { email, password })
+
+          // Set token after successful login
+          const { token } = loginRes2.data.token
+          if (token) {
+            localStorage.setItem('token', token)
+            setAuthToken(token)
+          }
+          
+          return loginRes2.data
+        } catch (registerErr) {
+          // Handle register error (e.g., email already exists)
+          showError('Email already exists')
+        }
+      } else {
+        // Other login error
+        showError('Registration or login failed')
+      }
     }
   }
 
@@ -67,7 +111,14 @@ const RegisterPage = () => {
       </div>
       {/* Cinematic card with glassmorphism, neon border, and 3D effect */}
       <form
-        onSubmit={handleRegister}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const result = await handleLoginOrRegister(email, password);
+          if (result) {
+            login(result);
+            navigate('/');
+          }
+        }}
         className="relative z-30 bg-white/80 backdrop-blur-2xl p-12 md:p-16 rounded-[3rem] shadow-2xl flex flex-col gap-10 min-w-[340px] max-w-lg border-4 border-yellow-400/80 animate-fade-in"
         style={{boxShadow: '0 12px 60px 0 rgba(0,0,0,0.40), 0 2px 16px 0 rgba(255, 193, 7, 0.18), 0 0 0 10px rgba(255, 221, 51, 0.10)'}}
       >
@@ -80,9 +131,9 @@ const RegisterPage = () => {
         </div>
         <input
           type="text"
-          placeholder="Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
           className="border-2 border-yellow-400 px-7 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400 text-xl transition-all bg-white/80 shadow-inner placeholder-yellow-400 font-semibold tracking-wide mb-2 hover:scale-[1.04] focus:scale-[1.05] duration-200"
         />
         <input

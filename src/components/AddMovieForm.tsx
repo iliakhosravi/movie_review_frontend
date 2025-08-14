@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { api } from "../services/api";
-import { MOVIES_ENDPOINT } from "../constants/api";
+import { api, authApi } from "../services/api";
+import { MOVIE_ADMIN_CREATE_URL } from "../constants/api";
 
 const AddMovieForm = ({ onAdd }: { onAdd: () => void }) => {
   const [formData, setFormData] = useState({
@@ -53,7 +53,7 @@ const AddMovieForm = ({ onAdd }: { onAdd: () => void }) => {
         views: formData.views ? Number(formData.views) : undefined,
       };
 
-      await api.post(MOVIES_ENDPOINT, payload);
+      await authApi.post(MOVIE_ADMIN_CREATE_URL, payload);
 
       setFormData({
         title: "",
