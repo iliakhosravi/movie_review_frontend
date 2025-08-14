@@ -1,15 +1,14 @@
 // src/pages/ProfilePage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, authApi } from "../services/api";
+import { authApi } from "../services/api";
 import {
   USER_UPDATE_URL,
   FAVORITES_ME_URL,
   MOVIE_DETAIL_URL,
   COMMENT_DELETE_MY_URL,
   COMMENT_LIST_MY_URL,
-  COMMENT_EDIT_MY_URL
-
+  COMMENT_EDIT_MY_URL,
 } from "../constants/api";
 import { useUserStore, useErrorStore } from "../store";
 import Icon from "../components/Icon";
@@ -32,7 +31,7 @@ const ProfilePage = () => {
     email: (user as any)?.email || "",
     bio: (user as any)?.bio || "",
     avatarUrl: (user as any)?.avatarUrl || "",
-    favoriteGenre: (user as any)?.favoriteGenre || "", // NEW
+    favoriteGenre: (user as any)?.favoriteGenre || "",
   });
 
   const [tab, setTab] = useState<Tab>("profile");
@@ -61,7 +60,7 @@ const ProfilePage = () => {
       email: (user as any).email || "",
       bio: (user as any).bio || "",
       avatarUrl: (user as any).avatarUrl || "",
-      favoriteGenre: (user as any).favoriteGenre || "", // NEW
+      favoriteGenre: (user as any).favoriteGenre || "",
     });
   }, [user, navigate]);
 
@@ -92,17 +91,46 @@ const ProfilePage = () => {
     }
   };
 
-  // ---------- Favorites (fetch each movie individually) ----------
+  // ---------- Favorites (پشتیبانی از هر دو حالت پاسخ: لیست Movie یا لیست Favorite) ----------
   const fetchFavorites = async () => {
     if (!user?.id) return;
     setLoadingFavs(true);
     try {
-      const userIdStr = toStr(user.id);
-      // 1) get favorites for this user
-      const favRes = await authApi.get<Favorite[]>(FAVORITES_ME_URL);
-      const favs = favRes.data || [];
+      const { data } = await authApi.get<any[]>(FAVORITES_ME_URL);
+      const arr = Array.isArray(data) ? data : [];
+
+      if (arr.length === 0) {
+        setFavMovies([]);
+        return;
+      }
+
+      // اگر پاسخ، خودِ فیلم‌ها باشند
+      const looksLikeMovieList = arr.some(
+        (it) => it && typeof it === "object" && "title" in it && "id" in it
+      );
+      // اگر پاسخ، رکورد Favorite باشد
+      const looksLikeFavoriteList = arr.some(
+        (it) => it && typeof it === "object" && "movieId" in it
+      );
+
+      if (looksLikeMovieList && !looksLikeFavoriteList) {
+        // مستقیماً آرایهٔ فیلم‌ها
+        const uniqueById = new Map<string, Movie>();
+        for (const m of arr as Movie[]) {
+          uniqueById.set(toStr((m as any).id), m);
+        }
+        setFavMovies([...uniqueById.values()]);
+        return;
+      }
+
+      // در غیر این صورت: آرایهٔ Favorite داریم → هر فیلم را جدا بگیر
+      const favorites = arr as Favorite[];
       const movieIds = [
-        ...new Set(favs.map((f) => toStr(f.movieId)).filter(Boolean)),
+        ...new Set(
+          favorites
+            .map((f) => toStr((f as any).movieId))
+            .filter((x) => x !== "")
+        ),
       ];
 
       if (movieIds.length === 0) {
@@ -110,16 +138,13 @@ const ProfilePage = () => {
         return;
       }
 
-      // 2) fetch each movie by /movies/:id
       const results: Movie[] = [];
       for (const mid of movieIds) {
         try {
-          const res = await authApi.get<Movie>(
-            MOVIE_DETAIL_URL(Number(mid))
-          );
+          const res = await authApi.get<Movie>(MOVIE_DETAIL_URL(Number(mid)));
           if (res.data) results.push(res.data);
         } catch {
-          // ignore single item error
+          // ادامه بده حتی اگر یکی خطا داد
         }
       }
       setFavMovies(results);
@@ -138,7 +163,6 @@ const ProfilePage = () => {
     if (!user?.id) return;
     setLoadingComments(true);
     try {
-      const userIdStr = toStr(user.id);
       const { data } = await authApi.get<Comment[]>(COMMENT_LIST_MY_URL);
       setMyComments(data || []);
     } finally {
@@ -241,7 +265,6 @@ const ProfilePage = () => {
             >
               My Comments
             </button>
-            {/* NEW: Recommendations tab */}
             <button
               onClick={() => setTab("recommendations")}
               className={`px-4 py-2 rounded-xl border ${
@@ -359,7 +382,7 @@ const ProfilePage = () => {
                   )}
                 </div>
 
-                {/* NEW: Favorite Genre */}
+                {/* Favorite Genre */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Favorite Genre
@@ -402,7 +425,7 @@ const ProfilePage = () => {
                             email: (user as any).email || "",
                             bio: (user as any).bio || "",
                             avatarUrl: (user as any).avatarUrl || "",
-                            favoriteGenre: (user as any).favoriteGenre || "", // NEW
+                            favoriteGenre: (user as any).favoriteGenre || "",
                           });
                         }}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-xl font-semibold transition-colors"
@@ -433,9 +456,16 @@ const ProfilePage = () => {
         {/* TAB: FAVORITES */}
         {tab === "favorites" && (
           <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-yellow-300/60 p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              My Favorites
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">My Favorites</h2>
+              <button
+                onClick={fetchFavorites}
+                className="px-4 py-2 rounded-xl bg-white border border-gray-200 hover:bg-yellow-50"
+              >
+                Refresh
+              </button>
+            </div>
+
             {loadingFavs ? (
               <div className="text-gray-600">Loading favorites…</div>
             ) : favMovies.length === 0 ? (
@@ -534,7 +564,7 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* TAB: RECOMMENDATIONS (NEW) */}
+        {/* TAB: RECOMMENDATIONS */}
         {tab === "recommendations" && (
           <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-yellow-300/60 p-6">
             <div className="flex items-center justify-between mb-4">

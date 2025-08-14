@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import { api, authApi } from "../services/api";
-import { FAVORITES_ME_URL, FAVORITE_DELETE_URL, FAVORITE_CREATE_URL} from "../constants/api";
+import { authApi } from "../services/api";
+import {
+  FAVORITES_ME_URL,
+  FAVORITE_DELETE_URL,
+  FAVORITE_CREATE_URL,
+} from "../constants/api";
 import { useUserStore } from "../store";
 import Icon from "./Icon";
 import type { Favorite } from "../types/Favorite";
@@ -21,18 +25,23 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
   const userIdStr = toStr(user?.id);
   const movieIdStr = toStr(movieId);
 
+  // دریافت علاقه‌مندی برای همین فیلم
   const refresh = async () => {
     if (!user?.id) {
       setFav(null);
       return;
     }
     try {
+      // بعضی بک‌اندها کوئری‌های یوزر/مووی را نادیده می‌گیرند و کل لیست را می‌دهند
+      // ما سمت کلاینت فیلتر می‌کنیم
       const { data } = await authApi.get<Favorite[]>(
         `${FAVORITES_ME_URL}?userId=${encodeURIComponent(
           userIdStr
         )}&movieId=${encodeURIComponent(movieIdStr)}`
       );
-      setFav(data?.[0] ?? null);
+      const list = Array.isArray(data) ? data : [];
+      const item = list.find((f) => toStr(f.movieId) === movieIdStr);
+      setFav(item ?? null);
     } catch (e) {
       console.warn("[FAV refresh] failed", e);
       setFav(null);
@@ -41,19 +50,24 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIdStr, movieIdStr]);
 
   const toggle = async () => {
-    if (!user?.id) return alert("Please login to use favorites");
+    if (!user?.id) {
+      alert("Please login to use favorites");
+      return;
+    }
     setLoading(true);
     try {
-      if (fav?.id) {
-        // optimistic
+      if (fav?.id != null) {
+        // حذف
         const old = fav;
+        // optimistic
         setFav(null);
         onChange?.(false);
         try {
-          await authApi.delete(FAVORITE_DELETE_URL(Number(old.id)));
+          await authApi.delete(FAVORITE_DELETE_URL(old.id as any)); // id را همانی که هست بفرست
         } catch (e) {
           // rollback
           setFav(old);
@@ -61,20 +75,27 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
           throw e;
         }
       } else {
+        // ایجاد
         const payload: Favorite = {
           userId: userIdStr,
           movieId: movieIdStr,
           createdAt: new Date().toISOString(),
+        } as Favorite;
+
+        // optimistic placeholder
+        const optimistic: Favorite = {
+          ...payload,
+          id: `optimistic-${movieIdStr}`,
         };
-        // optimistic
-        setFav({ ...payload, id: Math.random().toString(36).slice(2) });
+        setFav(optimistic);
         onChange?.(true);
+
         try {
           const { data } = await authApi.post<Favorite>(
             FAVORITE_CREATE_URL,
             payload
           );
-          setFav(data);
+          setFav(data); // id واقعی بک‌اند
         } catch (e) {
           // rollback
           setFav(null);

@@ -46,18 +46,17 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             : "w-full h-2/3"
         }`}
       >
-        {/* TOP BADGES LAYER */}
-        {/* Rating badge (top-left) */}
-        <div className="absolute top-2 left-2 z-20">
-          <div className="inline-flex items-center gap-1 rounded-full border border-yellow-400/60 bg-black/70 backdrop-blur-sm px-2 py-1 text-xs font-semibold text-yellow-200">
+        {/* Badges row */}
+        <div className="absolute inset-x-0 top-0 z-40 flex items-start justify-between p-2 pointer-events-none">
+          {/* Rating badge (top-left) */}
+          <div className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-yellow-400/60 bg-black/70 backdrop-blur-sm px-2 py-1 text-xs font-semibold text-yellow-200">
             <Icon name="StarIcon" size={14} className="text-yellow-300" />
             <span>{movie.rating ?? "-"}</span>
           </div>
-        </div>
-
-        {/* Favorite button (top-right) */}
-        <div className="absolute top-2 right-2 z-20">
-          <FavoriteButton movieId={movie.id} />
+          {/* Favorite button (top-right) */}
+          <div className="pointer-events-auto">
+            <FavoriteButton movieId={movie.id} />
+          </div>
         </div>
 
         {/* Poster image */}
@@ -67,13 +66,13 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
             alt={movie.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          {/* Soft gradient overlay (below badges) */}
+          {/* Soft gradient overlay */}
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 
-        {/* Timer overlay (blocks everything when not published) */}
+        {/* Timer overlay */}
         {notPublished && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
             <Timer seconds={secondsLeft} />
           </div>
         )}
@@ -91,16 +90,16 @@ const MovieCard = ({ movie, view }: MovieCardProps) => {
           </div>
         )}
 
-        {/* Hover Content */}
+        {/* Hover Content (doesn't block clicks except its own button) */}
         {hovered && !notPublished && !showVideo && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-black/80 backdrop-blur-sm transition-all duration-300">
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-black/80 backdrop-blur-sm transition-all duration-300 pointer-events-none">
             <p className="text-white text-sm mb-4 line-clamp-4 text-center">
               {movie.description}
             </p>
             {movie.videoUrl && (
               <button
                 onClick={() => setShowVideo(true)}
-                className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-full transform transition-all duration-300 hover:scale-105"
+                className="pointer-events-auto bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-full transform transition-all duration-300 hover:scale-105"
               >
                 Watch Now
               </button>
