@@ -411,8 +411,8 @@ const AdminPage = () => {
                           </div>
                         </td>
                         <td className="p-3 text-gray-600">
-                          {c.createdAt
-                            ? new Date(c.createdAt).toLocaleString()
+                          {c.created_at
+                            ? new Date(c.created_at).toLocaleString()
                             : "-"}
                         </td>
                         <td className="p-3">

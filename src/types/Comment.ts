@@ -6,5 +6,5 @@ export interface Comment {
   userName: string;
   text: string;
   rating: number; // 1..10
-  createdAt: string; // ISO string
+  created_at: string; // ISO string
 }

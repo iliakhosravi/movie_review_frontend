@@ -596,8 +596,8 @@ const ProfilePage = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-600">
                         Movie #{c.movieId} •{" "}
-                        {c.createdAt
-                          ? new Date(c.createdAt).toLocaleString()
+                        {c.created_at
+                          ? new Date(c.created_at).toLocaleString()
                           : ""}
                       </div>
                       <div className="text-sm text-gray-700">{c.rating}/10</div>

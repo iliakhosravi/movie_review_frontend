@@ -22,7 +22,7 @@ const CommentList = ({
     () =>
       [...comments].sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ),
     [comments]
   );
@@ -53,7 +53,7 @@ const CommentList = ({
                     {c.userName}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {new Date(c.createdAt).toLocaleString()}
+                    {new Date(c.created_at).toLocaleString()}
                   </span>
                 </div>
 
