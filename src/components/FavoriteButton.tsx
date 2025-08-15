@@ -41,7 +41,6 @@ const FavoriteButton = ({ movieId, className = "", onChange }: Props) => {
         )}&movieId=${encodeURIComponent(movieIdStr)}`
       );
       const list = Array.isArray(data) ? data : [];
-      console.log("Favorites API response:", list);
       
       // Check if we got favorite objects or movie objects
       let item: Favorite | null = null;

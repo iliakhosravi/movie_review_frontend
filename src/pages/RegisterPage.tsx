@@ -51,7 +51,7 @@ const RegisterPage = () => {
       const loginRes = await authApi.post(USER_LOGIN_URL, { email, password })
 
       // If login succeeds, set token and proceed
-      const { token } = loginRes.data.token
+      const { token } = loginRes.data
       if (token) {
         localStorage.setItem('token', token)
         setAuthToken(token)
@@ -70,7 +70,7 @@ const RegisterPage = () => {
           const loginRes2 = await authApi.post(USER_LOGIN_URL, { email, password })
 
           // Set token after successful login
-          const { token } = loginRes2.data.token
+          const { token } = loginRes2.data
           if (token) {
             localStorage.setItem('token', token)
             setAuthToken(token)
