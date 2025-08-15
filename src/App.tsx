@@ -38,13 +38,15 @@ export default function App() {
   // Bootstrap user + token from localStorage
   useEffect(() => {
     const raw = localStorage.getItem("user");
-    if (raw) {
+    const token = localStorage.getItem("token");
+    if (token) {
       try {
         const parsed = JSON.parse(raw) as any;
         setUser(parsed);
-        if (parsed?.token) setAuthToken(parsed.token);
+        if (token) setAuthToken(token);
       } catch {
         /* ignore parse errors */
+        console.error("Failed to parse user from localStorage");
       }
     }
   }, [setUser]);
