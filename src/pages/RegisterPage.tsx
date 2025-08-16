@@ -48,45 +48,51 @@ const RegisterPage = () => {
   const handleLoginOrRegister = async (email: string, password: string) => {
     try {
       // Try login first
-      const loginRes = await authApi.post(USER_LOGIN_URL, { email, password })
+      const loginRes = await authApi.post(USER_LOGIN_URL, { email, password });
 
-      // If login succeeds, set token and proceed
-      const { token } = loginRes.data
+      // If login succeeds, set token and user in the store
+      const user = loginRes.data;
+      const { token } = loginRes.data;
+
       if (token) {
-        localStorage.setItem('token', token)
-        setAuthToken(token)
+        localStorage.setItem('token', token);
+        setAuthToken(token);
+        useUserStore.getState().setUser(user); // Set user in the store
+        useUserStore.getState().setToken(token); // Set token in the store
       }
-      
-      return loginRes.data
+
+      return loginRes.data;
     } catch (loginErr: any) {
       // If login fails, check error message
-      const errorMsg = loginErr?.response?.data?.detail
+      const errorMsg = loginErr?.response?.data?.detail;
       if (errorMsg === "Invalid credentials" || errorMsg === "User not found" || loginErr?.response?.status === 400) {
         // Try register
         try {
-          const registerRes = await authApi.post(USER_SIGNUP_URL, { email, password })
-          
-          // After successful register, try login again
-          const loginRes2 = await authApi.post(USER_LOGIN_URL, { email, password })
+          const registerRes = await authApi.post(USER_SIGNUP_URL, { email, password });
 
-          // Set token after successful login
-          const { token } = loginRes2.data
+          // After successful register, try login again
+          const loginRes2 = await authApi.post(USER_LOGIN_URL, { email, password });
+
+          // Set token and user after successful login
+          const { token, user } = loginRes2.data;
           if (token) {
-            localStorage.setItem('token', token)
-            setAuthToken(token)
+            localStorage.setItem('token', token);
+            setAuthToken(token);
+            useUserStore.getState().setUser(user); // Set user in the store
+            useUserStore.getState().setToken(token); // Set token in the store
           }
-          
-          return loginRes2.data
+
+          return loginRes2.data;
         } catch (registerErr) {
           // Handle register error (e.g., email already exists)
-          showError('Email already exists')
+          showError('Email already exists');
         }
       } else {
         // Other login error
-        showError('Registration or login failed')
+        showError('Registration or login failed');
       }
     }
-  }
+  };
 
   return (
     <div className="relative flex items-center justify-center min-h-screen w-full bg-black overflow-hidden font-cinzel">
