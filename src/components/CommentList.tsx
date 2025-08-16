@@ -68,7 +68,7 @@ const CommentList = ({
               {canDelete && (
                 <div className="mt-2">
                   <button
-                    onClick={() => onDelete(c.id)}
+                    onClick={() => onDelete(Number(c.id))}
                     disabled={deletingId === c.id}
                     className="text-sm text-red-600 hover:text-red-700 font-semibold disabled:opacity-60"
                   >

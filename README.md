@@ -1,333 +1,431 @@
-# React Movie Site
+# 🎬 Movie Recommendation & Review — Frontend (React + TypeScript + Vite)
 
-A modern web application for browsing and managing a collection of movies, built with **React**, **TypeScript**, and **Tailwind CSS**.
+This repository contains the **frontend** of a movie recommendation & review platform.  
+It is a **React + TypeScript** single‑page app bootstrapped with **Vite** and styled with utility classes (Tailwind-like). The app integrates with a **Django backend** via REST APIs (JWT/Bearer token).
 
-<p align="center">
-  <img src="public/logo.png" alt="MultiMedia Magic Logo" width="96" />
-</p>
-
-<p align="center">
-  <b>MultiMedia Magic</b> &mdash; Discover, search, and manage your favorite movies with a beautiful, responsive UI.
-</p>
-
-<p align="center">
-  <img alt="React" src="https://img.shields.io/badge/React-19-blue?logo=react" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript" />
-  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.x-38bdf8?logo=tailwindcss&logoColor=white" />
-  <img alt="Vite" src="https://img.shields.io/badge/Vite-5.x-646cff?logo=vite&logoColor=white" />
-  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
-</p>
+> **Note:** This README is for the **frontend only**. It does not rely on any JSON server; all data comes from your **Django** backend.
 
 ---
 
-## 📑 Table of Contents
+## 🚀 Features at a Glance
 
-- [Features](#features)
-- [Demo](#demo)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Starting the API Server](#starting-the-api-server)
-  - [Starting the Development Server](#starting-the-development-server)
-- [Project Structure](#project-structure)
-- [Usage](#usage)
-- [How It Works (Detailed Explanation)](#how-it-works-detailed-explanation)
-  - [Component and State Flow](#component-and-state-flow)
-  - [User Registration and Login](#user-registration-and-login)
-  - [Debounced Search and Progress Bar](#debounced-search-and-progress-bar)
-  - [Movie Add, List, and Trailer](#movie-add-list-and-trailer)
-  - [Resume Video](#resume-video)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+- Auth (register/login) with **Bearer token** persisted in `localStorage`
+- Guarded routes (`/profile`, `/movies/:id`) and **admin-only** area (`/admin`)
+- Home with **quick search** (debounced) + **Advanced Search** (title, director, genre, rating, year)
+- Movie cards with rating, hover preview, video trailer button, and **Favorite** toggle
+- **Favorite** flow supports two backend response styles (list of Favorite records or list of Movies)
+- Movie detail with **comments**, **ratings**, **views counter**, **video resume** (continue watching)
+- Profile with tabs: **Profile**, **Favorites**, **My Comments**, **Recommendations**
+- Admin panel: CRUD for movies, user and comment moderation
+- Global state with **Zustand** (UI state, user session, error handling)
+- Stable **API layer** with Axios + optional request/response logging
 
 ---
 
-## Features
+## 🧱 Tech Stack
 
-- **Browse movies** in grid or list view
-- **Debounced search** with progress bar (search triggers after 0.5s pause)
-- **Add new movies** to the collection (form opens on button click, can be closed)
-- **Watch movie trailers** directly in the app
-- **Responsive design** for desktop and mobile devices
-- **Loading indicator** (timer) shown during search debounce
-- **Modern UI** with animated gradients and glassmorphism effects using Tailwind CSS
-- **User registration/login** with profile avatar and persistent session
-- **Resume video** feature to continue watching from where you left off
-
----
-
-## Demo
-
-> _Add a link or GIF screenshot of your app here if available!_
+- **Framework:** React 18, TypeScript
+- **Bundler:** Vite
+- **Routing:** React Router
+- **State:** Zustand (persisted slices)
+- **HTTP:** Axios
+- **Styling:** Utility classes (Tailwind-like CSS in `index.css`)
+- **Video:** Native `<video>` with custom resume logic
+- **Tooling:** ESLint/TSConfig (Vite defaults)
 
 ---
 
-## Technologies Used
-
-- [React 19](https://react.dev/) with TypeScript
-- [React Router](https://reactrouter.com/) for navigation
-- [Axios](https://axios-http.com/) for API requests
-- [Vite](https://vitejs.dev/) for build tooling and development server
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [JSON Server](https://github.com/typicode/json-server) for mock API
-
----
-
-## Getting Started
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Amirreza938/multiMedia_website
-   cd react-movie-site
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-### Starting the API Server
-
-This project uses a local JSON server to provide the movie data API.
-
-1. **Install JSON Server globally (if not already installed):**
-   ```bash
-   npm install -g json-server
-   ```
-
-2. **Start the JSON Server using the included db.json file:**
-   ```bash
-   json-server --watch db.json --port 4000
-   ```
-
-The API will be available at [http://localhost:4000/movies](http://localhost:4000/movies)
-
-### Starting the Development Server
-
-1. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-
-2. **Open your browser and navigate to:**
-   ```
-   http://localhost:5173
-   ```
-
----
-
-## Project Structure
+## 📁 Project Structure (Frontend)
 
 ```
-multiMedia_website/
-├── public/           # Static assets
-├── src/
-│   ├── assets/       # Images and other assets
-│   ├── components/   # Reusable UI components
-│   │   ├── AddMovieForm.tsx
-│   │   ├── LateInput.tsx      # Debounced input with progress bar
-│   │   ├── Timer.tsx          # Timer for loading indication
-│   │   ├── MovieCard.tsx
-│   │   └── MovieList.tsx
-│   ├── constants/    # API endpoints and constants
-│   │   └── api.ts
-│   ├── pages/        # Page components
-│   │   └── Home.tsx
-│   ├── services/     # API and other services
-│   │   └── api.ts
-│   ├── types/        # TypeScript type definitions
-│   │   └── Movie.ts
-│   ├── contexts/     # React Contexts (UserContext)
-│   ├── App.tsx       # Main app component
-│   └── main.tsx      # Entry point
-├── db.json           # Mock database for JSON Server
-├── index.html        # HTML entry point
-├── vite.config.ts    # Vite configuration
-└── tailwind.config.js # Tailwind CSS configuration
+src
+├── App.css
+├── App.tsx
+├── components
+│   ├── AddMovieForm.tsx
+│   ├── AdvancedSearch.tsx
+│   ├── CommentForm.tsx
+│   ├── CommentList.tsx
+│   ├── FavoriteButton.tsx
+│   ├── Header.tsx
+│   ├── Icon.tsx
+│   ├── LateInput.tsx
+│   ├── MovieCard.tsx
+│   ├── MovieFormModal.tsx
+│   ├── MovieList.tsx
+│   ├── RegisterModal.tsx
+│   ├── StarRating.tsx
+│   ├── Timer.tsx
+│   ├── UserButton.tsx
+│   └── VideoPlayer.tsx
+├── constants
+│   ├── api.ts
+│   └── userApi.ts
+├── contexts
+│   └── UserContext.tsx
+├── icons
+│   └── *.svg (+ index.ts)
+├── index.css
+├── main.tsx
+├── pages
+│   ├── AdminLoginPage.tsx
+│   ├── AdminPage.tsx
+│   ├── Home.tsx
+│   ├── MovieDetail.tsx
+│   ├── ProfilePage.tsx
+│   └── RegisterPage.tsx
+├── services
+│   └── api.ts
+├── store
+│   ├── index.ts
+│   ├── useErrorStore.ts
+│   ├── useUIStore.ts
+│   └── useUserStore.ts
+├── types
+│   ├── Comment.ts
+│   ├── Favorite.ts
+│   ├── Movie.ts
+│   ├── svg.d.ts
+│   └── User.ts
+├── utils
+│   └── recalculateMovieRating.ts
+└── vite-env.d.ts
 ```
 
 ---
 
-## Usage
+## ⚙️ Prerequisites
 
-- **Search:** Type in the search box. Results update only after you stop typing for 0.5 seconds. A progress bar and timer show the waiting period.
-- **Add Movie:** Click "Add Movie" to open the form. Fill in details and submit. Click "Close" to hide the form.
-- **View Toggle:** Switch between grid and list views for movies.
-- **Watch Trailer:** Hover or click the play button on a movie card to watch its trailer.
-- **Register/Login:** Click "Register" in the header to create an account or log in. After login, your avatar and name appear in the header.
-- **Resume Video:** If you stop watching a video, you can resume from where you left off the next time you visit the page.
+- **Node.js** ≥ 18 (recommended LTS)
+- **npm** ≥ 9 (or **pnpm/yarn** if you prefer)
 
 ---
 
-## How It Works (Detailed Explanation)
+## 🔧 Setup & Run
 
-### Component and State Flow
+### 1) Install dependencies
+```bash
+npm install
+```
 
-- **App.tsx**: The root component. Wraps the app in a `UserProvider` context and sets up routes for Home and RegisterPage.
-- **UserContext**: Provides global user state (`user`, `setUser`) to all components via React Context API.
-- **Home.tsx**: Main page. Handles movie fetching, search state, view toggle, and add-movie form. Uses `useUser()` to access the current user.
-- **Header.tsx**: Top navigation bar. Shows logo, search input, add-movie button, view toggle, and user profile/register button. Uses `useUser()` for user info and logout.
-- **LateInput.tsx**: Custom input with debounce and progress bar. Notifies parent after user stops typing for 0.5s.
-- **MovieList.tsx**: Displays movies in grid or list view, animating each card.
-- **MovieCard.tsx**: Shows movie poster, rating, description, and trailer video on hover.
-- **AddMovieForm.tsx**: Form to add a new movie. On submit, posts to the API and refreshes the movie list.
+### 2) Environment variables
+Create a `.env` file at the project root (same level as `vite.config.ts`):
 
-### User Registration and Login
+```
+# Django API base URL (no trailing slash)
+VITE_DJANGO_API_BASE=http://localhost:8000
 
-- **Register/Login Flow:**
-  - Click "Register" in the header to open the registration/login page.
-  - Enter a name and password.
-    - If the name does not exist, a new user is created and logged in.
-    - If the name exists and the password matches, you are logged in.
-    - If the name exists but the password does not match, an error is shown.
-  - After login/registration, your avatar (from [pravatar.cc](https://pravatar.cc/)) and name appear in the header.
-  - Click your avatar/name to log out (confirmation required).
-  - User session is persisted using `localStorage` (`userId` key).
-  - User state is managed globally via `UserContext` so all components can access it.
+# Optional: turn on axios request/response console logs
+VITE_API_LOG=true
+```
 
-- **How it works in code:**
-  - `UserContext.tsx` provides `user` and `setUser` via React Context.
-  - `RegisterPage.tsx` uses `setUser` to update the context and stores the user ID in `localStorage`.
-  - On app load, `Home.tsx` checks `localStorage` for a user ID and fetches the user profile if present.
-  - `Header.tsx` displays the Register button if no user, or the profile avatar/name with logout if logged in.
+> The app reads these via `import.meta.env`.  
+> The axios client for Django lives in `src/services/api.ts` as `authApi`.
 
-### Debounced Search and Progress Bar
+### 3) Start the dev server
+```bash
+npm run dev
+```
+The app will open on the Vite dev URL (e.g., `http://localhost:5173`).
 
-- **Debounced Search:**
-  - The search input uses the `LateInput` component.
-  - As the user types, the input value is updated immediately, but the actual search/filter only happens after 500ms of inactivity.
-  - This is achieved using a `setTimeout` for the debounce and a `setInterval` to update the progress bar.
-  - The progress bar visually fills up as the debounce timer counts down.
-  - When the timer completes, `onDebouncedChange` is called, updating the `debouncedSearch` state in `Home.tsx`.
-  - The movie list is filtered based on `debouncedSearch`.
-
-- **Progress Bar:**
-  - The progress bar is shown below the search input while the debounce timer is running.
-  - If the user types again before the timer completes, the timer and progress bar reset.
-  - When the timer completes, the bar disappears and the search is triggered.
-
-- **State Flow:**
-  - `Home.tsx` holds `search` (immediate input) and `debouncedSearch` (used for filtering).
-  - `Header.tsx` and mobile search both use `LateInput`, passing handlers to update these states.
-  - The filtered movie list is derived from `debouncedSearch`.
-
-### Movie Add, List, and Trailer
-
-- **Adding Movies:**
-  - Click "Add Movie" to open the form.
-  - Fill in all fields and submit.
-  - The movie is posted to the API and the list refreshes.
-  - The form can be closed at any time.
-
-- **Movie List and Card:**
-  - Movies are displayed in grid or list view, with animated fade-in.
-  - Each card shows poster, rating, genre, year, director, and description.
-  - Hovering (or clicking "Watch Now") shows the trailer video overlay.
-
-- **Release Timer:**
-  - If a movie has a future `releaseDate`, a timer is shown until it becomes available.
-
-### Resume Video
-
-- **Saving and Resuming Video Position:**
-  - The current position of the video is saved in `localStorage` using a unique key for each user and movie.
-  - When the video page is loaded, the app checks `localStorage` for a saved position.
-  - If a position is found, a prompt is shown to the user to continue watching or start over.
-  - If the user chooses to continue, the video will seek to the saved position and resume playback.
-  - If the user chooses to start over, the video will reset to the beginning.
-
-- **Key Functions and Logic:**
-  - `getStorageKey(userId, movieId)`: Generates a unique key for storing the video progress in `localStorage`.
-  - `handleTimeUpdate()`: Saves the current time of the video to `localStorage` at regular intervals.
-  - `handleEnded()`: Removes the saved position from `localStorage` when the video ends.
-  - `useEffect()`: Checks for a saved position when the video page is loaded and shows the prompt if necessary.
-  - `handleContinue()`: Seeks the video to the saved position and starts playback.
-  - `handleRestart()`: Resets the video to the beginning and starts playback.
-
----
-
-#### Autoplay و Reactivity (پاسخ به سوالات فنی/محصول)
-
-- **Autoplay:**
-  - پس از انتخاب کاربر (ادامه یا شروع مجدد)، ویدیو به صورت خودکار پخش می‌شود (autoplay) تا تجربه کاربری روان باشد.
-  - به دلیل محدودیت‌های مرورگرها، autoplay فقط پس از تعامل کاربر (کلیک روی دکمه) فعال می‌شود و در حالت اولیه بدون اجازه کاربر اجرا نمی‌شود.
-  - اگر کاربر گزینه «ادامه» را انتخاب کند، ویدیو به موقعیت ذخیره‌شده seek می‌شود و بلافاصله پخش آغاز می‌گردد.
-  - اگر کاربر «شروع مجدد» را انتخاب کند، ویدیو از ابتدا پخش می‌شود و موقعیت قبلی حذف می‌گردد.
-
-- **Reactivity (واکنش‌پذیری):**
-  - ذخیره و بازیابی موقعیت ویدیو به صورت واکنش‌پذیر و با کمترین rerender انجام می‌شود؛ فقط VideoPlayer و کامپوننت‌های مرتبط با وضعیت کاربر به state مربوطه متصل هستند.
-  - استفاده از hookها و selectorها باعث می‌شود فقط بخش‌های لازم UI به تغییرات state واکنش نشان دهند و کل صفحه دوباره رندر نشود.
-  - تغییر وضعیت کاربر (ورود/خروج) فقط روی دکمه کاربر و صفحه پروفایل اثر می‌گذارد و سایر بخش‌ها بدون تغییر باقی می‌مانند.
-  - ذخیره موقعیت ویدیو در localStorage به صورت غیرمسدودکننده (non-blocking) انجام می‌شود تا عملکرد روان بماند.
-
-- **توضیحات بیشتر و پاسخ به سوالات:**
-  - پیاده‌سازی به گونه‌ای است که هر کاربر فقط پیشرفت خودش را می‌بیند و اطلاعات سایر کاربران یا مهمان‌ها جداگانه ذخیره می‌شود.
-  - اگر کاربر وارد نشده باشد، امکان ادامه ویدیو وجود ندارد و ابتدا باید ثبت‌نام/ورود انجام شود.
-  - جزئیات بیشتر و پاسخ به سوالات فنی/محصولی در بخش پرسش و پاسخ README آمده است.
-
----
-
-## Troubleshooting
-
-### API Connection Errors
-
-If you see `ERR_CONNECTION_REFUSED` errors, make sure the JSON Server is running on port 4000. Check that:
-
-1. You've installed JSON Server (`npm install -g json-server`)
-2. The server is running with the command `json-server --watch db.json --port 4000`
-3. There are no other services using port 4000
-
-### Alternative Mock Data Solution
-
-If you prefer not to use JSON Server, you can modify the `src/services/api.ts` file to use mock data instead:
-
-```typescript
-// filepath: src/services/api.ts
-import { Movie } from '../types/Movie';
-
-const mockMovies: Movie[] = [
-  {
-    id: 1,
-    title: "Downton Abbey",
-    genre: "Drama",
-    year: 2004,
-    director: "Guy Ritchie",
-    rating: 8.5,
-    description: "A family drama set in the 19th century, with a focus on the lives of the Crawley family and their servants.",
-    poster: "src/assets/downton.jpg",
-    videoUrl: "/videos/interstellar.mp4"
-  },
-  // Add more mock movies as needed
-];
-
-export const api = {
-  get: async (endpoint: string) => {
-    if (endpoint === '/movies') {
-      return { data: mockMovies };
-    }
-    throw new Error('Endpoint not mocked');
-  },
-  post: async (endpoint: string, data: any) => {
-    if (endpoint === '/movies') {
-      console.log('Movie added (mock):', data);
-      return { data: { id: Date.now(), ...data } };
-    }
-    throw new Error('Endpoint not mocked');
-  }
-};
+### 4) Build & preview production bundle
+```bash
+npm run build
+npm run preview
 ```
 
 ---
 
-## Contributing
+## 🔐 Authentication Flow (Frontend)
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- `RegisterPage` and `RegisterModal` implement a **login-first, then fallback to signup** UX:
+  1. Try `POST /api/users/login/` with `{ email, password }`.
+  2. If invalid, try `POST /api/users/signup/` with the same payload.
+  3. On success, **store `token` in `localStorage`**, call `setAuthToken(token)` so Axios sends `Authorization: Bearer <token>`.
+  4. The full user object is persisted in Zustand (`useUserStore`) and partially in `localStorage` (`user`, `token`, `userId`).
+
+- Protected routes are wrapped in `<ProtectedRoute>` (see `App.tsx`).  
+- Admin routes use `<AdminRoute>` and also check `user.is_admin === true`.
 
 ---
 
-## 📄 License
+## 🧭 Routing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- `/` — **Home** (public view, but some actions may require auth)
+- `/register` — **Register/Login**
+- `/movies/:id` — **MovieDetail** (protected)
+- `/profile` — **ProfilePage** (protected; tabs: Profile, Favorites, My Comments, Recommendations)
+- `/admin-login` — **Admin Login**
+- `/admin` — **Admin Panel** (admin-only)
+
+---
+
+## 🗃️ Global State (Zustand)
+
+- `useUserStore` — user/session state (`user`, `isAuthenticated`, `login`, `logout`, `setUser`). Persisted to `localStorage`.
+- `useUIStore` — UI state (`search`, `view`, `isScrolled`, `toggleView`, …). Persisted (only `search` & `view`). 
+- `useErrorStore` — global error banner/flags with `showError`, `showWarning`, `showInfo`.
+
+All stores live under `src/store/*`. The `store/index.ts` re‑exports the slices.
+
+---
+
+## 🌐 API Layer (Axios)
+
+**File:** `src/services/api.ts`
+
+- `authApi` — configured with `VITE_DJANGO_API_BASE`  
+- `setAuthToken(token)` — sets/removes `Authorization: Bearer <token>` header on `authApi`
+- Optional request/response logging when `VITE_API_LOG=true`
+
+**REST Endpoints (expected):** `src/constants/api.ts`
+- **Users:** `USER_SIGNUP_URL`, `USER_LOGIN_URL`, `USER_ME_URL`, `USER_UPDATE_URL`, admin list/delete
+- **Movies:** list, detail, admin create/edit/delete, increase views, quality, update rating
+- **Favorites:** `FAVORITES_ME_URL`, `FAVORITE_CREATE_URL`, `FAVORITE_DELETE_URL(id)`
+- **Comments:** create, list by movie, list mine, edit mine, delete mine, admin list/delete
+
+> Ensure your Django backend provides these endpoints and shapes (see **Types** below).
+
+---
+
+## 🧩 Components & Pages — What They Do
+
+### Header / UserButton / RegisterModal
+- Global top bar with **debounced search** (`LateInput`) and **Advanced Search** toggle (on Home).
+- `UserButton` shows Register (opens `RegisterModal`) when unauthenticated, otherwise takes user to `/profile`.
+- Admin Login button appears when the current user is not admin.
+
+### LateInput
+- Controlled input with **debounce & progress** bar.  
+- Calls `onDebouncedChange` after `debounce` (default 500ms).
+
+### MovieCard
+- Displays poster, **rating badge** (top‑left), **FavoriteButton** (top‑right), description overlay, and optional trailer button.  
+- Hover overlay uses `pointer-events: none` to avoid blocking card interactions; inner buttons re‑enable pointer events.  
+- If `releaseDate` is in the future → **Timer** overlay is shown.
+
+### FavoriteButton
+- Uses `authApi` and `FAVORITES_ME_URL`, `FAVORITE_CREATE_URL`, `FAVORITE_DELETE_URL`.
+- Maintains **isolated state per movie**. `useEffect` refreshes when `userId` or `movieId` changes.
+- **Optimistic UI**: clicking toggles immediately; rolls back on error.
+- Handles **two backend response styles** on `/api/favorites/me/`:
+  1) Array of **Favorite** records → finds the one with matching `movieId`  
+  2) Array of **Movie** objects → treats presence of current `movieId` as “favorited” (synthetic favorite)
+- Delete call uses `FAVORITE_DELETE_URL(movieId)` because the backend may delete by movieId for the current user (adjust on server if needed).
+
+### AdvancedSearch
+- Controlled query UI for title, director, genre, rating min/max, year min/max.  
+- Calls `onChange` immediately; `Home.tsx` applies filters in a `useMemo` pipeline.
+
+### MovieList
+- Grid/list layout switch (from `useUIStore.view`).  
+- Animates item entrance.
+
+### Timer
+- Simple countdown formatter for unreleased movies (shows “Now available!” when done).
+
+### CommentForm / CommentList
+- Post, list, and delete comments for a movie.  
+- `MovieDetail` recomputes ratings after comment changes using `recalculateMovieRating` (calls backend `PATCH /api/movies/:id/update-rating/`).
+
+### VideoPlayer
+- Stores **watch progress** in `localStorage` per `[userId]-[movieId]`.  
+- On next play, offers **Continue** from last saved time or **Restart**.  
+- Seeks precisely after metadata loaded; robust against race conditions.
+
+### MovieFormModal (Admin)
+- Admin add/edit movie via modal.  
+- Validates fields (year range, 1888–2100; rating 0–10).  
+- Calls `MOVIE_ADMIN_CREATE_URL` or `MOVIE_ADMIN_EDIT_URL`.
+
+### Pages
+
+#### Home.tsx
+- Fetches movies from `MOVIE_LIST_URL`.  
+- Debounced quick search + optional **Advanced Search panel**.  
+- Uses `MovieList` and preserves user’s view mode.
+
+#### MovieDetail.tsx (Protected)
+- Fetches movie by `id`.  
+- On mount: calls `POST /increase-views/`.  
+- Loads comments; can post/delete; triggers **rating recompute** (server computes & returns new average).  
+- Shows trailer link, cast, views, and quality badge (from `/quality/`).
+
+#### ProfilePage.tsx (Protected)
+- **Profile tab:** edit & save name/email/bio/avatarUrl/favoriteGenre → `PUT USER_UPDATE_URL`, then refreshes with `GET USER_ME_URL`.  
+- **Favorites tab:** supports both favorite response shapes (see FavoriteButton). Builds movie list either directly or by requesting each movie id.  
+- **My Comments tab:** lists current user comments with edit/delete.  
+- **Recommendations tab:** calls `MOVIE_SUGGEST_URL` (server filters by favoriteGenre or other heuristics).
+
+#### AdminLoginPage.tsx
+- Email/password login to get **token**, then fetch `/api/users/me/` and validate `is_admin`.  
+- Persists `user`, `token` and redirects to `/admin`.
+
+#### AdminPage.tsx (Admin only)
+- Tabs: **Movies**, **Comments**, **Users**.  
+- Movies: list with edit/delete, open **MovieFormModal** for add/edit.  
+- Comments: admin list & delete. Recomputes rating on delete via `recalculateMovieRating`.  
+- Users: admin list & delete (prevents deleting yourself).
+
+#### RegisterPage.tsx
+- “Try login → else signup → then login” flow in one button.  
+- Stores token and updates `authApi` header via `setAuthToken`.
+
+---
+
+## 🧾 Types (Frontend Contracts)
+
+```ts
+// src/types/Movie.ts
+export interface Movie {
+  id: number;
+  title: string;
+  genre?: string;
+  year?: number;
+  director?: string;
+  rating?: number;           // 0..10 (average from comments)
+  description?: string;
+  poster?: string;           // image URL
+  videoUrl?: string;         // trailer or full video URL
+  trailer?: string;          // external link (e.g., YouTube)
+  cast?: string;             // e.g. "Actor A, Actor B"
+  views?: number;
+  gradeByUsersReview?: string; // from backend /quality/
+}
+
+// src/types/Comment.ts
+export interface Comment {
+  id?: number | string;
+  movieId: number | string;
+  userId: number | string;
+  userName: string;
+  text: string;
+  rating: number;        // 1..10
+  created_at: string;    // ISO
+}
+
+// src/types/Favorite.ts
+export interface Favorite {
+  id?: number | string;
+  userId: number | string;
+  movieId: number | string;
+  createdAt: string;     // ISO
+}
+
+// src/types/User.ts
+export interface User {
+  id: string | number;
+  name: string;
+  password?: string;
+  avatarUrl?: string;
+  email?: string;
+  bio?: string;
+  createdAt?: string;
+  is_admin?: boolean;
+  favoriteGenre?: string;
+}
+```
+
+> Ensure your Django serializers align with these shapes (or adapt the TS types and consuming code accordingly).
+
+---
+
+## 🧮 Utility: Recompute Rating
+
+**File:** `src/utils/recalculateMovieRating.ts`  
+Fetches all comments for a movie (`GET /api/comments/movie/:id/`), computes average on the client, and sends:  
+`PATCH /api/movies/:id/update-rating/ { rating: avg }`
+
+> You can move the averaging to the backend and have the endpoint compute & persist the rating—frontend will still call it after comment changes.
+
+---
+
+## 🎨 Styling
+
+- The app relies on utility classes (e.g., `bg-yellow-400`, `rounded-xl`).  
+- You can plug in Tailwind or keep the provided CSS tokens in `index.css` / `App.css`.
+- Icons under `src/icons/*` are imported as React components via `?react` (`src/components/Icon.tsx`).
+
+---
+
+## 🧪 Manual Test Plan (Frontend)
+
+- **Auth**
+  - Register a new user → token stored → header set → `/profile` accessible
+  - Login with existing user
+  - Logout clears state & storage; protected routes redirect to `/register`
+- **Home**
+  - Debounced search updates list after ~500ms
+  - Advanced Search filters by title/director/genre/rating/year
+  - Toggle grid/list view persists across reloads
+- **Card**
+  - Hover overlay shows text & “Watch Now” without blocking other clicks
+  - Favorite toggle updates UI optimistically; only this card changes
+- **Detail**
+  - Video player prompts “Continue” after leaving mid-play, then seeks
+  - Post/delete a comment; rating updates (and persists after refresh)
+  - Views increment on open
+- **Profile**
+  - Edit and save profile fields; reload shows updated data
+  - Favorites tab populates (works whether `/favorites/me/` returns Movie[] or Favorite[])
+  - My Comments lists, with edit/delete
+  - Recommendations render when `favoriteGenre` is set
+- **Admin**
+  - Only admin can access `/admin`
+  - Add/edit/delete movie; changes reflect on Home/Detail
+  - Delete comment triggers rating recompute
+  - Users list and delete (not yourself)
+
+---
+
+## 🧯 Troubleshooting
+
+- **401/403 everywhere**
+  - Confirm `localStorage.token` is set after login and `setAuthToken(token)` ran (see `App.tsx` effect).
+  - Backend CORS must allow Vite dev origin.
+- **Favorites look “global” or all cards turn favorited**
+  - Each `FavoriteButton` isolates state by `movieId` and `userId`; make sure cards render unique `key={movie.id}`.
+  - Ensure `/api/favorites/me/` filters by the current user OR return just the current user’s favorited **movies**; both are supported.
+- **Delete favorite by `id` vs `movieId`**
+  - This code calls `FAVORITE_DELETE_URL(movieId)` because some backends delete “by movieId for current user”. If your backend expects favorite **record id**, adapt the call to pass the correct `id`.
+- **Images or videos not loading**
+  - Use absolute URLs or configure static files in Django. Check mixed-content (HTTP/HTTPS) issues.
+- **Search/filters not working**
+  - Ensure `MOVIE_LIST_URL` returns an array of movies with the fields used in filters (`title`, `director`, `genre`, `rating`, `year`).
+
+---
+
+## 🧰 Scripts
+
+```bash
+npm run dev       # start Vite dev server
+npm run build     # production build
+npm run preview   # serve the dist build locally
+```
+
+---
+
+## 📌 Notes & Conventions
+
+- Persisted keys in `localStorage`:
+  - `token` — JWT/Bearer token
+  - `user` — full user JSON (admin flag, etc.)
+  - `userId` — convenience id (some flows read it)
+  - `movie-progress-<uid>-<movieId>` — per-user video resume
+- Avoid mixing domains; set `VITE_DJANGO_API_BASE` correctly (e.g., `http://127.0.0.1:8000`).  
+- If your Django uses cookie auth + CSRF instead of Bearer tokens, adjust `authApi` accordingly.
+
+---
+
+## 🏁 Summary
+
+- Frontend is **decoupled** from the backend; set `VITE_DJANGO_API_BASE` and you’re good.  
+- Routes are protected where needed.  
+- Favorites, comments, ratings, and recommendations are wired to Django endpoints.  
+- Admin flows live entirely in the frontend but require `is_admin` from the backend.
+
+If you need a shorter “presentation script” for the demo, check the **Manual Test Plan** section above 👆 — it’s an ordered path you can follow live.
+
+---
+
+**Good luck with your presentation!** 🍿🎥
